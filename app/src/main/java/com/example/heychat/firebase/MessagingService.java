@@ -15,6 +15,7 @@ import androidx.core.app.NotificationManagerCompat;
 
 import com.example.heychat.R;
 import com.example.heychat.activities.ChatActivity;
+import com.example.heychat.activities.IncomingInvitationActivity;
 import com.example.heychat.models.User;
 import com.example.heychat.ultilities.Constants;
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -33,6 +34,36 @@ public class MessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
+
+        String type = remoteMessage.getData().get(Constants.REMOTE_MSG_TYPE);
+        if(type != null){
+            if (type.equals(Constants.REMOTE_MSG_INVITATION)){
+                Intent intent = new Intent(getApplicationContext(), IncomingInvitationActivity.class);
+                intent.putExtra(
+                        Constants.REMOTE_MSG_MEETING_TYPE,
+                        remoteMessage.getData().get(Constants.REMOTE_MSG_MEETING_TYPE)
+                );
+
+                intent.putExtra(
+                        Constants.KEY_NAME,
+                        remoteMessage.getData().get(Constants.KEY_NAME)
+                );
+
+                intent.putExtra(
+                        Constants.KEY_EMAIL,
+                        remoteMessage.getData().get(Constants.KEY_EMAIL)
+                );
+                intent.putExtra(
+                        Constants.REMOTE_MSG_INVITER_TOKEN,
+                        remoteMessage.getData().get(Constants.REMOTE_MSG_INVITER_TOKEN)
+                );
+
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        }
+
+
         User user = new User();
         user.id = remoteMessage.getData().get(Constants.KEY_USER_ID);
         user.name = remoteMessage.getData().get(Constants.KEY_NAME);

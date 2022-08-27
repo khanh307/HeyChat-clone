@@ -27,8 +27,19 @@ public class Constants {
     public static final String KEY_AVAILABILITY = "availability";
     public static final String REMOTE_MSG_AUTHORIZATION ="Authorization";
     public static final String REMOTE_MSG_CONTENT_TYPE = "Content-Type";
+
     public static final String REMOTE_MSG_DATA = "data";
     public static final String REMOTE_MSG_REGISTRATION_IDS = "registration_ids";
+
+    public static final String REMOTE_MSG_TYPE = "type";
+    public static final String REMOTE_MSG_INVITATION = "invitation";
+    public static final String REMOTE_MSG_MEETING_TYPE = "meetingtype";
+    public static final String REMOTE_MSG_INVITER_TOKEN = "invitertoken";
+
+    public static final String REMOTE_MSG_INVITATION_RESPONSE = "invitationResponse";
+    public static final String REMOTE_MSG_INVITATION_ACCEPTED = "accepted";
+    public static final String REMOTE_MSG_INVITATION_REJECTED = "rejected";
+
 
     public static HashMap<String, String> remoteMsgHeaders = null;
     public  static HashMap<String, String> getRemoteMsgHeaders(){
@@ -36,7 +47,7 @@ public class Constants {
             remoteMsgHeaders = new HashMap<>();
             remoteMsgHeaders.put(
                     REMOTE_MSG_AUTHORIZATION,
-                    "key=AAAAPkouW1k:APA91bHott6vrb-4W1Olhb7r7TEX91S8PmzVymOUHTBIzPgUhadoFC0CybGamu2PYG1BV52VKqNOmQFcjGJoYt3oc2eeH_UXYd0yPJJgclAEcEQ3rXmoXaExJO5Mj2f5E0VQDGGGddEH"
+                    "key=AAAAtfm5WI8:APA91bFgQUl08EUT3XFI_ieSpjwqoUwMkIuKDF3zNq7OQobgoJt2dYWid9ATtbJAG1AnkYVtJl8J2TkZIghnTpd4mgZewErcydXHiNGrfByPC9guSFgQ3aa6bCE-QWFJWSO9OHZiDzfW"
             );
             remoteMsgHeaders.put(
                     REMOTE_MSG_CONTENT_TYPE,

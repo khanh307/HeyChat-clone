@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.MainActivity2"
+    android:background="@color/colorPrimary">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar_layout"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_180sdp"
+        android:fitsSystemWindows="true">
+
+        <net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true"
+            app:contentScrim="?attr/colorPrimary"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:title="Chat with friends"
+            android:id="@+id/collapsing_toolbar"
+            app:expandedTitleTextColor="@color/white"
+            app:collapsedTitleTextColor="@color/white"
+            app:expandedTitleGravity="top"
+            app:collapsedTitleGravity="left|top"
+            app:expandedTitleTextAppearance="@style/ExpandedAppBar"
+            app:collapsedTitleTextAppearance="@style/CollapsedAppBar"
+            app:expandedTitleMarginStart="@dimen/_30sdp"
+            app:expandedTitleMarginEnd="@dimen/_100sdp">
+
+            <androidx.appcompat.widget.Toolbar
+                app:contentInsetStartWithNavigation="0dp"
+                app:titleMarginTop="@dimen/_3sdp"
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_70sdp"
+                app:layout_collapseMode="pin"
+                android:layout_gravity="top">
+            </androidx.appcompat.widget.Toolbar>
+
+            <include
+                android:layout_marginBottom="@dimen/_10sdp"
+                android:layout_gravity="bottom|center"
+                layout="@layout/tablayout_custom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_collapseMode="pin"/>
+
+        </net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:padding="@dimen/_10sdp"
+        android:background="@drawable/background_content_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+
+        <FrameLayout
+            android:id="@+id/fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </androidx.core.widget.NestedScrollView>
+
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -5,6 +5,8 @@ buildscript {
     repositories {
         // Check that you have the following line (if not, add it):
         google()  // Google's Maven repository
+        jcenter()
+        maven { url "https://plugins.gradle.org/m2/" }
         mavenCentral()
 
     }

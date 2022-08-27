@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#1C2E46</color>
+    <color name="primary">#115a47</color>
     <color name="primary_dark">#142232</color>
     <color name="primary_text">#212121</color>
     <color name="secondary_text">#757575</color>
@@ -10,11 +10,14 @@
     <color name="icon_background">#20FFFFFF</color>
     <color name="error">#B00020</color>
     <color name="received_message_background">#090016</color>
-    <color name="colorPrimary">#536DFE</color>
+    <color name="colorPrimary">#115a47</color>
     <color name="colorPrimaryDark">#536DFE</color>
     <color name="colorAccent">#F44336</color>
     <color name="colorTextPrimary">#212121</color>
     <color name="colorTextSecondary">#757575</color>
     <color name="colorDivider">#BDBDBD</color>
     <color name="colorWhiter">#FFFFFF</color>
+    <color name="colorBlack">#000000</color>
+    <color name="colorWhile">#ffffff</color>
+    <color name="colorTextTablayout">#3d8270</color>
 </resources>
