@@ -2,11 +2,18 @@ package com.example.heychat.activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,9 +23,13 @@ import com.example.heychat.network.ApiClient;
 import com.example.heychat.network.ApiService;
 import com.example.heychat.ultilities.Constants;
 
+import org.jitsi.meet.sdk.JitsiMeetActivity;
+import org.jitsi.meet.sdk.JitsiMeetConferenceOptions;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
+
+import java.net.URL;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import retrofit2.Call;
@@ -53,6 +64,17 @@ public class IncomingInvitationActivity extends AppCompatActivity {
                 getIntent().getStringExtra(Constants.KEY_EMAIL)
         );
 
+        ImageView imageAcceptInvitation = findViewById(R.id.imageAcceptInvitaion);
+        imageAcceptInvitation.setOnClickListener(v -> sendInvitationResponse(
+                Constants.REMOTE_MSG_INVITATION_ACCEPTED,
+                getIntent().getStringExtra(Constants.REMOTE_MSG_INVITER_TOKEN)
+        ));
+
+        ImageView imageRejectInvitation = findViewById(R.id.imageRejectInvitaion);
+        imageRejectInvitation.setOnClickListener(v -> sendInvitationResponse(
+                Constants.REMOTE_MSG_INVITATION_REJECTED,
+                getIntent().getStringExtra(Constants.REMOTE_MSG_INVITER_TOKEN)
+        ));
 
     }
 
@@ -87,11 +109,31 @@ public class IncomingInvitationActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                         if(response.isSuccessful()){
+                            if (type.equals(Constants.REMOTE_MSG_INVITATION_ACCEPTED)){
+                                try {
+                                    URL serverURL = new URL("https://meet.jit.si");
+                                    JitsiMeetConferenceOptions conferenceOptions = new JitsiMeetConferenceOptions.Builder()
+                                            .setServerURL(serverURL)
+                                            .setWelcomePageEnabled(false)
+                                            .setRoom(getIntent().getStringExtra(Constants.REMOTE_MSG_MEETING_ROOM))
+                                            .build();
 
+                                    JitsiMeetActivity.launch(IncomingInvitationActivity.this, conferenceOptions);
+                                    finish();
+                                } catch (Exception exception){
+                                    Toast.makeText(IncomingInvitationActivity.this, exception.getMessage(), Toast.LENGTH_SHORT).show();
+                                    finish();
+                                }
+
+                            } else {
+                                Toast.makeText(IncomingInvitationActivity.this, "Invitation Rejected", Toast.LENGTH_SHORT).show();
+                                finish();
+                            }
                         } else {
                             Toast.makeText(IncomingInvitationActivity.this, response.message(), Toast.LENGTH_SHORT).show();
                             finish();
                         }
+
                     }
 
                     @Override
@@ -100,6 +142,37 @@ public class IncomingInvitationActivity extends AppCompatActivity {
                         finish();
                     }
                 });
+    }
+
+    private BroadcastReceiver invitationResponseReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String type = intent.getStringExtra(Constants.REMOTE_MSG_INVITATION_RESPONSE);
+            if(type != null){
+                Log.d("BBB", type.toString());
+                if (type.equals(Constants.REMOTE_MSG_INVITATION_CANCELLED)){
+                    Toast.makeText(IncomingInvitationActivity.this, "Invitation Cancelled", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            }
+        }
+    };
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(
+                invitationResponseReceiver,
+                new IntentFilter(Constants.REMOTE_MSG_INVITATION_RESPONSE)
+        );
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(
+                invitationResponseReceiver
+        );
     }
 
 

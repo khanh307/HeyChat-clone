@@ -6,13 +6,13 @@
         <type value="RUNNING_DEVICE_TARGET" />
         <deviceKey>
           <Key>
-            <type value="VIRTUAL_DEVICE_PATH" />
-            <value value="C:\Users\Microsoft Windows\.android\avd\Nexus_6P_API_30.avd" />
+            <type value="SERIAL_NUMBER" />
+            <value value="RF8N305LZAN" />
           </Key>
         </deviceKey>
       </Target>
     </runningDeviceTargetSelectedWithDropDown>
-    <timeTargetWasSelectedWithDropDown value="2022-08-27T05:52:22.706904700Z" />
+    <timeTargetWasSelectedWithDropDown value="2022-08-28T12:11:20.788068200Z" />
     <targetsSelectedWithDialog>
       <Target>
         <type value="QUICK_BOOT_TARGET" />

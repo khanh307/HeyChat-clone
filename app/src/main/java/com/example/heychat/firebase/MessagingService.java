@@ -12,6 +12,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.example.heychat.R;
 import com.example.heychat.activities.ChatActivity;
@@ -37,12 +38,18 @@ public class MessagingService extends FirebaseMessagingService {
 
         String type = remoteMessage.getData().get(Constants.REMOTE_MSG_TYPE);
         if(type != null){
+            Log.d("AAA", type.toString());
             if (type.equals(Constants.REMOTE_MSG_INVITATION)){
                 Intent intent = new Intent(getApplicationContext(), IncomingInvitationActivity.class);
                 intent.putExtra(
                         Constants.REMOTE_MSG_MEETING_TYPE,
                         remoteMessage.getData().get(Constants.REMOTE_MSG_MEETING_TYPE)
                 );
+
+//                intent.putExtra(
+//                        Constants.KEY_IMAGE,
+//                        remoteMessage.getData().get(Constants.KEY_IMAGE)
+//                );
 
                 intent.putExtra(
                         Constants.KEY_NAME,
@@ -58,8 +65,26 @@ public class MessagingService extends FirebaseMessagingService {
                         remoteMessage.getData().get(Constants.REMOTE_MSG_INVITER_TOKEN)
                 );
 
+                intent.putExtra(
+                        Constants.REMOTE_MSG_INVITER_TOKEN,
+                        remoteMessage.getData().get(Constants.REMOTE_MSG_INVITER_TOKEN)
+                );
+
+                intent.putExtra(
+                        Constants.REMOTE_MSG_MEETING_ROOM,
+                        remoteMessage.getData().get(Constants.REMOTE_MSG_MEETING_ROOM)
+                );
+
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
+            } else if (type.equals(Constants.REMOTE_MSG_INVITATION_RESPONSE)){
+                Intent intent = new Intent(Constants.REMOTE_MSG_INVITATION_RESPONSE);
+                intent.putExtra(
+                        Constants.REMOTE_MSG_INVITATION_RESPONSE,
+                        remoteMessage.getData().get(Constants.REMOTE_MSG_INVITATION_RESPONSE)
+                );
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+
             }
         }
 

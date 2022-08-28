@@ -38,6 +38,17 @@
                 android:text="012345678"
                 android:textSize="@dimen/_12ssp"
                 android:textColor="@color/black"/>
+
+            <Button
+                android:id="@+id/log_out_btn"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:layout_gravity="center"
+                android:layout_width="@dimen/_90sdp"
+                android:layout_height="@dimen/_30sdp"
+                android:text="Log out"
+                android:textAllCaps="false"
+                android:background="@drawable/background_button"
+                />
         </LinearLayout>
 
         <de.hdodenhof.circleimageview.CircleImageView
