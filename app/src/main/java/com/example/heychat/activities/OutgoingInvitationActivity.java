@@ -180,6 +180,7 @@ public class OutgoingInvitationActivity extends AppCompatActivity {
                                 .setServerURL(serverURL)
                                 .setWelcomePageEnabled(false)
                                 .setRoom(meetingRoom)
+
                                 .build();
                         JitsiMeetActivity.launch(OutgoingInvitationActivity.this, conferenceOptions);
                         finish();

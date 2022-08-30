@@ -4,9 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.IncomingInvitationActivity">
+    tools:context=".activities.IncomingInvitationActivity"
+    android:background="#4db0ee"
+    android:fitsSystemWindows="true">
     
     <ImageView
+        app:tint="@color/white"
         android:id="@+id/imageMeetingType"
         android:layout_width="@dimen/_30sdp"
         android:layout_height="@dimen/_30sdp"
@@ -22,7 +25,7 @@
         android:layout_marginTop="@dimen/_4sdp"
         android:gravity="center"
         android:includeFontPadding="false"
-        android:text="Incoming Meeting Invitation"
+        android:text="Incoming Call"
         android:textColor="@color/black"
         android:textSize="@dimen/_15ssp"
         app:layout_constraintTop_toBottomOf="@id/imageMeetingType"/>
@@ -33,18 +36,15 @@
         android:orientation="vertical"
         android:gravity="center"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginBottom="@dimen/_80sdp">
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/textFirstChar"
-            android:layout_width="@dimen/_60sdp"
-            android:layout_height="@dimen/_60sdp"
+            android:layout_width="@dimen/_120sdp"
+            android:layout_height="@dimen/_120sdp"
             android:background="@drawable/background_image"
-            android:gravity="center"
-            android:includeFontPadding="false"
-            android:textAllCaps="true"
-            android:textColor="@color/white"
-            android:textSize="@dimen/_30ssp"/>
+            android:gravity="center"/>
         
         <TextView
             android:id="@+id/textUsername"
@@ -70,22 +70,28 @@
     
     <ImageView
         android:id="@+id/imageAcceptInvitaion"
-        android:layout_width="@dimen/_40sdp"
-        android:layout_height="@dimen/_40sdp"
+        android:layout_width="@dimen/_50sdp"
+        android:layout_height="@dimen/_50sdp"
         android:layout_marginStart="@dimen/_60sdp"
-        android:layout_marginBottom="@dimen/_50sdp"
-        android:background="@android:color/holo_green_dark"
-        android:padding="@dimen/_8sdp"
+        android:layout_marginBottom="@dimen/_80sdp"
+        android:background="@drawable/background_image"
+        android:backgroundTint="#02be19"
+        android:padding="@dimen/_10sdp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"
+        android:src="@drawable/ic_video_call"
+        app:tint="@color/white"/>
 
     <ImageView
         android:id="@+id/imageRejectInvitaion"
-        android:layout_width="@dimen/_40sdp"
-        android:layout_height="@dimen/_40sdp"
+        android:layout_width="@dimen/_50sdp"
+        android:layout_height="@dimen/_50sdp"
         android:layout_marginEnd="@dimen/_60sdp"
-        android:layout_marginBottom="@dimen/_50sdp"
-        android:background="@android:color/holo_red_dark"
+        android:layout_marginBottom="@dimen/_80sdp"
+        android:background="@drawable/background_image"
+        android:backgroundTint="#f52421"
+        android:src="@drawable/ic_call_end_24"
+        app:tint="@color/white"
         android:padding="@dimen/_8sdp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
