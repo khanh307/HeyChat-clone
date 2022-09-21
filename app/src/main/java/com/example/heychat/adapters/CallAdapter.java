@@ -44,25 +44,24 @@ public class CallAdapter extends RecyclerView.Adapter<CallAdapter.CallViewHolder
     class CallViewHolder extends RecyclerView.ViewHolder{
         TextView username;
         CircleImageView image_user;
-        ImageView call_btn;
+        ImageView video_call_btn;
+        ImageView audio_call_btn;
 
 
         public CallViewHolder(@NonNull View itemView) {
             super(itemView);
             username = itemView.findViewById(R.id.user_name_call);
             image_user = itemView.findViewById(R.id.image_user);
-            call_btn = itemView.findViewById(R.id.call_btn);
+            video_call_btn = itemView.findViewById(R.id.video_call_btn);
+            audio_call_btn = itemView.findViewById(R.id.audio_call_btn);
         }
 
         void setUserData(User user){
             username.setText(user.name);
             image_user.setImageBitmap(getUserImage(user.image));
-            call_btn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    callListener.initiateVideoCall(user);
-                }
-            });
+            video_call_btn.setOnClickListener(v -> callListener.initiateVideoCall(user));
+
+            audio_call_btn.setOnClickListener(view -> callListener.initiateAudioCall(user));
         }
 
     }

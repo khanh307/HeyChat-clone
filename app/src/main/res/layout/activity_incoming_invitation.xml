@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activities.IncomingInvitationActivity"
-    android:background="#4db0ee"
+    android:background="@drawable/background_call"
     android:fitsSystemWindows="true">
     
     <ImageView
@@ -16,7 +16,8 @@
         android:layout_marginTop="@dimen/_50sdp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:backgroundTint="@color/white"/>
     
     <TextView
         android:id="@+id/textIncomingMeetingInvitation"
@@ -26,8 +27,9 @@
         android:gravity="center"
         android:includeFontPadding="false"
         android:text="Incoming Call"
-        android:textColor="@color/black"
-        android:textSize="@dimen/_15ssp"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:textSize="@dimen/_18ssp"
         app:layout_constraintTop_toBottomOf="@id/imageMeetingType"/>
     
     <LinearLayout
@@ -40,11 +42,14 @@
         android:layout_marginBottom="@dimen/_80sdp">
 
         <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/textFirstChar"
+            android:id="@+id/image_user_incoming"
             android:layout_width="@dimen/_120sdp"
             android:layout_height="@dimen/_120sdp"
             android:background="@drawable/background_image"
-            android:gravity="center"/>
+            android:src="@drawable/profile"
+            android:gravity="center"
+            app:civ_border_color="@color/black"
+            app:civ_border_width="1dp"/>
         
         <TextView
             android:id="@+id/textUsername"
@@ -53,7 +58,9 @@
             android:layout_marginTop="@dimen/_10sdp"
             android:gravity="center"
             android:includeFontPadding="false"
-            android:textColor="@color/black"
+            android:textColor="@color/white"
+            android:text="Username"
+            android:textStyle="bold"
             android:textSize="@dimen/_18ssp"/>
 
         <TextView
@@ -62,8 +69,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/_10sdp"
             android:gravity="center"
+            android:text="Phone number"
             android:includeFontPadding="false"
-            android:textColor="@color/black"
+            android:textColor="@color/white"
             android:textSize="@dimen/_11ssp"/>
         
     </LinearLayout>
@@ -75,11 +83,11 @@
         android:layout_marginStart="@dimen/_60sdp"
         android:layout_marginBottom="@dimen/_80sdp"
         android:background="@drawable/background_image"
-        android:backgroundTint="#02be19"
+        android:backgroundTint="#f52421"
         android:padding="@dimen/_10sdp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:src="@drawable/ic_video_call"
+        android:src="@drawable/ic_call_end_24"
         app:tint="@color/white"/>
 
     <ImageView
@@ -89,10 +97,10 @@
         android:layout_marginEnd="@dimen/_60sdp"
         android:layout_marginBottom="@dimen/_80sdp"
         android:background="@drawable/background_image"
-        android:backgroundTint="#f52421"
-        android:src="@drawable/ic_call_end_24"
+        android:backgroundTint="#02be19"
+        android:src="@drawable/ic_video_call"
         app:tint="@color/white"
-        android:padding="@dimen/_8sdp"
+        android:padding="@dimen/_10sdp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 

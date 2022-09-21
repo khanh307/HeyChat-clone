@@ -1,9 +1,12 @@
 package com.example.heychat.activities;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Base64;
 import android.view.View;
 import android.widget.Toast;
@@ -11,8 +14,11 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 
 import com.example.heychat.R;
+import com.example.heychat.adapters.CallAdapter;
 import com.example.heychat.adapters.ChatAdapter;
+
 import com.example.heychat.databinding.ActivityChatBinding;
+import com.example.heychat.listeners.CallListener;
 import com.example.heychat.models.ChatMessage;
 import com.example.heychat.models.User;
 import com.example.heychat.network.ApiClient;
@@ -55,6 +61,7 @@ public class ChatActivity extends BaseActivity{
     private FirebaseFirestore database;
     private String conversationId = null;
     private Boolean isReceiverAvailable = false;
+    private CallListener callListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +72,42 @@ public class ChatActivity extends BaseActivity{
         loadReceiverDetails();
         init();
         listenMessages();
+
+        binding.inputeMessage.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if(binding.inputeMessage.getText().toString().isEmpty()){
+                    setBtnVisible(false);
+                } else {
+                    setBtnVisible(true);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+        binding.audioCallBtnChatAct.setOnClickListener(v-> callListener.initiateAudioCall(receiverUser));
+        binding.videoCallBtnChatAct.setOnClickListener(v-> callListener.initiateVideoCall(receiverUser ));
+    }
+
+    private void setBtnVisible(boolean visible){
+        if (visible){
+            binding.layoutImage.setVisibility(View.INVISIBLE);
+            binding.layoutAttact.setVisibility(View.INVISIBLE);
+            binding.layoutSend.setVisibility(View.VISIBLE);
+        } else {
+            binding.layoutImage.setVisibility(View.VISIBLE);
+            binding.layoutAttact.setVisibility(View.VISIBLE);
+            binding.layoutSend.setVisibility(View.INVISIBLE);
+        }
+
     }
 
     private void init(){
@@ -185,11 +228,6 @@ public class ChatActivity extends BaseActivity{
                     chatAdapter.notifyItemRangeInserted(0, chatMessages.size());
                 }
             }
-            if (isReceiverAvailable){
-                binding.textAvailability.setVisibility(View.VISIBLE);
-            } else{
-                binding.textAvailability.setVisibility(View.GONE);
-            }
 
         });
     }
@@ -230,9 +268,8 @@ public class ChatActivity extends BaseActivity{
                 chatAdapter.notifyItemRangeInserted(chatMessages.size(), chatMessages.size());
                 binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size() - 1);
             }
-            binding.chatRecyclerView.setVisibility(View.VISIBLE);
+
         }
-        binding.progressBar.setVisibility(View.GONE);
         if (conversationId == null){
             checkForConversion();
         }
@@ -255,6 +292,32 @@ public class ChatActivity extends BaseActivity{
     private void setListeners(){
         binding.imageBack.setOnClickListener(view -> onBackPressed());
         binding.layoutSend.setOnClickListener(v -> sendMessage());
+
+        callListener = new CallListener() {
+            @Override
+            public void initiateVideoCall(User user) {
+                if(user.token == null || user.token.trim().isEmpty()){
+                    Toast.makeText(getApplicationContext(), user.name +"is not available for video call", Toast.LENGTH_SHORT).show();
+                } else {
+                    Intent intent = new Intent(getApplicationContext(), OutgoingInvitationActivity.class);
+                    intent.putExtra("user", user);
+                    intent.putExtra("type", "video");
+                    startActivity(intent);
+                }
+            }
+
+            @Override
+            public void initiateAudioCall(User user) {
+                if(user.token == null || user.token.trim().isEmpty()){
+                    Toast.makeText(getApplicationContext(), user.name +"is not available for audio call", Toast.LENGTH_SHORT).show();
+                } else {
+                    Intent intent = new Intent(getApplicationContext(), OutgoingInvitationActivity.class);
+                    intent.putExtra("user", user);
+                    intent.putExtra("type", "audio");
+                    startActivity(intent);
+                }
+            }
+        };
     }
 
     private void addConversion(HashMap<String, Object> conversion){

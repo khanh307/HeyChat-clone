@@ -7,6 +7,8 @@
     tools:context=".fragments.ProfileFragment">
 
     <androidx.core.widget.NestedScrollView
+        android:paddingTop="5dp"
+        android:paddingLeft="5dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
@@ -48,16 +50,7 @@
                         android:textSize="@dimen/_12ssp"
                         android:textColor="@color/black"/>
 
-                    <Button
-                        android:id="@+id/log_out_btn"
-                        android:layout_marginTop="@dimen/_10sdp"
-                        android:layout_gravity="center"
-                        android:layout_width="@dimen/_90sdp"
-                        android:layout_height="@dimen/_30sdp"
-                        android:text="Log out"
-                        android:textAllCaps="false"
-                        android:background="@drawable/background_button"
-                        />
+
                 </LinearLayout>
 
                 <de.hdodenhof.circleimageview.CircleImageView
@@ -65,216 +58,245 @@
                     android:layout_width="@dimen/_80sdp"
                     android:layout_height="@dimen/_80sdp"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/profile" />
+                    android:src="@drawable/profile"
+                    app:civ_border_color="@color/black"
+                    app:civ_border_width="1dp"/>
             </LinearLayout>
 
             <GridLayout
-                android:columnOrderPreserved="true"
-                android:layout_centerHorizontal="true"
-                android:columnCount="2"
-                android:layout_below="@id/layout_profile"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                android:layout_below="@id/layout_profile"
+                android:layout_centerInParent="true"
+                android:columnCount="2"
+                android:orientation="horizontal"
                 android:useDefaultMargins="true">
 
                 <LinearLayout
                     android:id="@+id/edit_profile_btn"
-                    android:gravity="center"
-                    android:background="@drawable/background_profile"
-                    android:layout_width="@dimen/_130sdp"
+                    android:layout_width="@dimen/_140sdp"
                     android:layout_height="@dimen/_150sdp"
+                    android:layout_row="0"
+                    android:layout_column="0"
+                    android:background="@drawable/background_profile"
+                    android:elevation="10dp"
+                    android:gravity="center"
                     android:orientation="vertical">
 
                     <androidx.cardview.widget.CardView
-                        android:backgroundTint="@color/primary"
-                        android:background="@drawable/background_image"
-                        app:cardCornerRadius="1000dp"
                         android:layout_width="@dimen/_60sdp"
-                        android:layout_height="@dimen/_60sdp">
+                        android:layout_height="@dimen/_60sdp"
+                        android:background="@drawable/background_image"
+                        android:backgroundTint="@color/primary"
+                        app:cardCornerRadius="1000dp">
 
                         <ImageView
-                            android:layout_gravity="center"
                             android:layout_width="@dimen/_40sdp"
                             android:layout_height="@dimen/_40sdp"
-                            android:src="@drawable/ic_edit_profile"/>
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_edit"
+                            android:padding="@dimen/_5sdp"/>
                     </androidx.cardview.widget.CardView>
 
                     <TextView
-                        android:textAllCaps="true"
-                        android:gravity="center"
-                        android:layout_marginTop="@dimen/_20sdp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_20sdp"
+                        android:gravity="center"
+                        android:maxLines="1"
                         android:text="Edit profile"
-                        android:textSize="@dimen/_10ssp"
+                        android:textStyle="bold"
+                        android:textAllCaps="true"
                         android:textColor="@color/primary"
-                        android:maxLines="1"/>
+                        android:textSize="@dimen/_13ssp" />
 
                 </LinearLayout>
 
                 <LinearLayout
-                    android:gravity="center"
-                    android:background="@drawable/background_profile"
-                    android:layout_width="@dimen/_130sdp"
+                    android:id="@+id/change_language_btn"
+                    android:layout_width="@dimen/_140sdp"
                     android:layout_height="@dimen/_150sdp"
+                    android:layout_row="0"
+                    android:layout_column="1"
+                    android:background="@drawable/background_profile"
+                    android:gravity="center"
                     android:orientation="vertical">
 
                     <androidx.cardview.widget.CardView
-                        android:backgroundTint="@color/primary"
-                        android:background="@drawable/background_image"
-                        app:cardCornerRadius="1000dp"
                         android:layout_width="@dimen/_60sdp"
-                        android:layout_height="@dimen/_60sdp">
+                        android:layout_height="@dimen/_60sdp"
+                        android:background="@drawable/background_image"
+                        android:backgroundTint="@color/primary"
+                        app:cardCornerRadius="1000dp">
 
                         <ImageView
-                            android:layout_gravity="center"
                             android:layout_width="@dimen/_40sdp"
                             android:layout_height="@dimen/_40sdp"
-                            android:src="@drawable/ic_edit_profile"/>
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_language" />
                     </androidx.cardview.widget.CardView>
 
                     <TextView
-                        android:textAllCaps="true"
-                        android:gravity="center"
-                        android:layout_marginTop="@dimen/_20sdp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Edit profile"
-                        android:textSize="@dimen/_10ssp"
+                        android:layout_marginTop="@dimen/_20sdp"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:text="Language"
+                        android:textStyle="bold"
+                        android:textAllCaps="true"
                         android:textColor="@color/primary"
-                        android:maxLines="1"/>
+                        android:textSize="@dimen/_13ssp" />
 
                 </LinearLayout>
+
                 <LinearLayout
-                    android:gravity="center"
-                    android:background="@drawable/background_profile"
-                    android:layout_width="@dimen/_130sdp"
+                    android:id="@+id/change_text_size"
+                    android:layout_width="@dimen/_140sdp"
                     android:layout_height="@dimen/_150sdp"
+                    android:layout_row="1"
+                    android:layout_column="0"
+                    android:background="@drawable/background_profile"
+                    android:gravity="center"
                     android:orientation="vertical">
 
                     <androidx.cardview.widget.CardView
-                        android:backgroundTint="@color/primary"
-                        android:background="@drawable/background_image"
-                        app:cardCornerRadius="1000dp"
                         android:layout_width="@dimen/_60sdp"
-                        android:layout_height="@dimen/_60sdp">
+                        android:layout_height="@dimen/_60sdp"
+                        android:background="@drawable/background_image"
+                        android:backgroundTint="@color/primary"
+                        app:cardCornerRadius="1000dp">
 
                         <ImageView
-                            android:layout_gravity="center"
                             android:layout_width="@dimen/_40sdp"
                             android:layout_height="@dimen/_40sdp"
-                            android:src="@drawable/ic_edit_profile"/>
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_format_size" />
                     </androidx.cardview.widget.CardView>
 
                     <TextView
-                        android:textAllCaps="true"
-                        android:gravity="center"
-                        android:layout_marginTop="@dimen/_20sdp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Edit profile"
-                        android:textSize="@dimen/_10ssp"
+                        android:layout_marginTop="@dimen/_20sdp"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:text="Text size"
+                        android:textStyle="bold"
+                        android:textAllCaps="true"
                         android:textColor="@color/primary"
-                        android:maxLines="1"/>
+                        android:textSize="@dimen/_13ssp" />
 
                 </LinearLayout>
+
                 <LinearLayout
-                    android:gravity="center"
-                    android:background="@drawable/background_profile"
-                    android:layout_width="@dimen/_130sdp"
+                    android:layout_width="@dimen/_140sdp"
                     android:layout_height="@dimen/_150sdp"
+                    android:layout_row="1"
+                    android:layout_column="1"
+                    android:background="@drawable/background_profile"
+                    android:gravity="center"
                     android:orientation="vertical">
 
                     <androidx.cardview.widget.CardView
-                        android:backgroundTint="@color/primary"
-                        android:background="@drawable/background_image"
-                        app:cardCornerRadius="1000dp"
                         android:layout_width="@dimen/_60sdp"
-                        android:layout_height="@dimen/_60sdp">
+                        android:layout_height="@dimen/_60sdp"
+                        android:background="@drawable/background_image"
+                        android:backgroundTint="@color/primary"
+                        app:cardCornerRadius="1000dp">
 
                         <ImageView
-                            android:layout_gravity="center"
                             android:layout_width="@dimen/_40sdp"
                             android:layout_height="@dimen/_40sdp"
-                            android:src="@drawable/ic_edit_profile"/>
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_private_account" />
                     </androidx.cardview.widget.CardView>
 
                     <TextView
-                        android:textAllCaps="true"
-                        android:gravity="center"
-                        android:layout_marginTop="@dimen/_20sdp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Edit profile"
-                        android:textSize="@dimen/_10ssp"
+                        android:layout_marginTop="@dimen/_20sdp"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:text="Private account"
+                        android:textAllCaps="true"
+                        android:textStyle="bold"
                         android:textColor="@color/primary"
-                        android:maxLines="1"/>
+                        android:textSize="@dimen/_13ssp" />
 
                 </LinearLayout>
+
                 <LinearLayout
-                    android:gravity="center"
-                    android:background="@drawable/background_profile"
-                    android:layout_width="@dimen/_130sdp"
+                    android:layout_width="@dimen/_140sdp"
                     android:layout_height="@dimen/_150sdp"
+                    android:layout_row="2"
+                    android:layout_column="0"
+                    android:background="@drawable/background_profile"
+                    android:gravity="center"
                     android:orientation="vertical">
 
                     <androidx.cardview.widget.CardView
-                        android:backgroundTint="@color/primary"
-                        android:background="@drawable/background_image"
-                        app:cardCornerRadius="1000dp"
                         android:layout_width="@dimen/_60sdp"
-                        android:layout_height="@dimen/_60sdp">
+                        android:layout_height="@dimen/_60sdp"
+                        android:background="@drawable/background_image"
+                        android:backgroundTint="@color/primary"
+                        app:cardCornerRadius="1000dp">
 
                         <ImageView
-                            android:layout_gravity="center"
                             android:layout_width="@dimen/_40sdp"
                             android:layout_height="@dimen/_40sdp"
-                            android:src="@drawable/ic_edit_profile"/>
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_edit_profile" />
                     </androidx.cardview.widget.CardView>
 
                     <TextView
-                        android:textAllCaps="true"
-                        android:gravity="center"
-                        android:layout_marginTop="@dimen/_20sdp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_20sdp"
+                        android:gravity="center"
+                        android:maxLines="1"
                         android:text="Edit profile"
-                        android:textSize="@dimen/_10ssp"
+                        android:textAllCaps="true"
                         android:textColor="@color/primary"
-                        android:maxLines="1"/>
+                        android:textSize="@dimen/_10ssp" />
 
                 </LinearLayout>
+
                 <LinearLayout
-                    android:gravity="center"
-                    android:background="@drawable/background_profile"
-                    android:layout_width="@dimen/_130sdp"
+                    android:id="@+id/log_out_btn"
+                    android:layout_width="@dimen/_140sdp"
                     android:layout_height="@dimen/_150sdp"
+                    android:layout_row="2"
+                    android:layout_column="1"
+                    android:background="@drawable/background_profile"
+                    android:gravity="center"
                     android:orientation="vertical">
 
                     <androidx.cardview.widget.CardView
-                        android:backgroundTint="@color/primary"
-                        android:background="@drawable/background_image"
-                        app:cardCornerRadius="1000dp"
                         android:layout_width="@dimen/_60sdp"
-                        android:layout_height="@dimen/_60sdp">
+                        android:layout_height="@dimen/_60sdp"
+                        android:background="@drawable/background_image"
+                        android:backgroundTint="@color/primary"
+                        app:cardCornerRadius="1000dp">
 
                         <ImageView
-                            android:layout_gravity="center"
                             android:layout_width="@dimen/_40sdp"
                             android:layout_height="@dimen/_40sdp"
-                            android:src="@drawable/ic_edit_profile"/>
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_logout"
+                            app:tint="@color/white"/>
                     </androidx.cardview.widget.CardView>
 
                     <TextView
-                        android:textAllCaps="true"
-                        android:gravity="center"
-                        android:layout_marginTop="@dimen/_20sdp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Edit profile"
-                        android:textSize="@dimen/_10ssp"
+                        android:layout_marginTop="@dimen/_20sdp"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:text="Log out"
+                        android:textStyle="bold"
+                        android:textAllCaps="true"
                         android:textColor="@color/primary"
-                        android:maxLines="1"/>
+                        android:textSize="@dimen/_13ssp" />
 
                 </LinearLayout>
 
@@ -283,7 +305,5 @@
         </RelativeLayout>
 
     </androidx.core.widget.NestedScrollView>
-
-
 
 </RelativeLayout>

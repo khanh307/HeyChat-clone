@@ -2,6 +2,7 @@ package com.example.heychat.fragments;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -13,17 +14,20 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.heychat.R;
 import com.example.heychat.activities.ChatActivity;
+import com.example.heychat.adapters.ChatBottomSheetFragment;
 import com.example.heychat.adapters.RecentConversationAdapter;
 import com.example.heychat.listeners.ConversionListener;
 import com.example.heychat.models.ChatMessage;
 import com.example.heychat.models.User;
 import com.example.heychat.ultilities.Constants;
 import com.example.heychat.ultilities.PreferenceManager;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.EventListener;
@@ -149,9 +153,13 @@ public class HomeFragment extends Fragment implements ConversionListener {
 
     @Override
     public void onConversionClicker(User user) {
-        Intent intent = new Intent(getContext(), ChatActivity.class);
-        intent.putExtra(Constants.KEY_USER, user);
-        startActivity(intent);
+//        Intent intent = new Intent(getContext(), ChatActivity.class);
+//        intent.putExtra(Constants.KEY_USER, user);
+//        startActivity(intent);
+
+        ChatBottomSheetFragment bottomSheetDialog = ChatBottomSheetFragment.newInstance(user);
+        bottomSheetDialog.show(getActivity().getSupportFragmentManager(), bottomSheetDialog.getTag());
+
     }
 
 }

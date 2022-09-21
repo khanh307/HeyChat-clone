@@ -9,10 +9,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +41,7 @@ import org.json.JSONObject;
 import java.net.URL;
 import java.util.UUID;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -43,7 +50,12 @@ public class OutgoingInvitationActivity extends AppCompatActivity {
 
     private PreferenceManager preferenceManager;
     private String inviterToken = null;
-    String meetingRoom = null;
+    private String meetingRoom = null;
+    private String meetingType = null;
+    private int currentProgress = 0;
+    private ProgressBar progressBar;
+    private CountDownTimer countDownTimer;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,20 +65,26 @@ public class OutgoingInvitationActivity extends AppCompatActivity {
         preferenceManager = new PreferenceManager(getApplicationContext());
 
         ImageView imageMeetingType = findViewById(R.id.imageMeetingTypeout);
-        String meetingType = getIntent().getStringExtra("type");
+        meetingType = getIntent().getStringExtra("type");
+
         if(meetingType != null){
             if(meetingType.equals("video")){
                 imageMeetingType.setImageResource(R.drawable.ic_video_call);
+            } else {
+                imageMeetingType.setImageResource(R.drawable.ic_call);
             }
         }
 
-        TextView textFirstChar = findViewById(R.id.textFirstChar);
+
+        CircleImageView textFirstChar = findViewById(R.id.textFirstChar);
         TextView textUsername = findViewById(R.id.textUsername);
         TextView textEmail = findViewById(R.id.outgoingtextEmail);
+        progressBar = findViewById(R.id.call_duration);
 
 
         User user = (User) getIntent().getSerializableExtra("user");
         if(user != null){
+            textFirstChar.setImageBitmap(getUserImage(user.image));
             textUsername.setText(user.name);
             textEmail.setText(user.email);
         }
@@ -86,8 +104,25 @@ public class OutgoingInvitationActivity extends AppCompatActivity {
                 }
             }
         });
+        countDownTimer = new CountDownTimer(30*1000, 50) {
+            @Override
+            public void onTick(long l) {
+                currentProgress += 200;
+                progressBar.setProgress(currentProgress);
+                progressBar.setMax(30000*4);
+            }
 
+            @Override
+            public void onFinish() {
+                if (user != null){
+                    cancelInvitation(user.token);
+                    currentProgress = 0;
+                }
+            }
+        };
+        countDownTimer.start();
     }
+
 
     private void initiateMeeting(String meetingType, String receiverToken){
         try {
@@ -98,7 +133,7 @@ public class OutgoingInvitationActivity extends AppCompatActivity {
 
             data.put(Constants.REMOTE_MSG_TYPE, Constants.REMOTE_MSG_INVITATION);
             data.put(Constants.REMOTE_MSG_MEETING_TYPE, meetingType);
-//            data.put(Constants.KEY_IMAGE, preferenceManager.getString(Constants.KEY_IMAGE));
+//            data.put(Constants.KEY_IMAGE, (preferenceManager.getString(Constants.KEY_IMAGE)));
             data.put(Constants.KEY_NAME, preferenceManager.getString(Constants.KEY_NAME));
             data.put(Constants.KEY_EMAIL, preferenceManager.getString(Constants.KEY_EMAIL));
             data.put(Constants.REMOTE_MSG_INVITER_TOKEN, inviterToken);
@@ -172,17 +207,19 @@ public class OutgoingInvitationActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             String type = intent.getStringExtra(Constants.REMOTE_MSG_INVITATION_RESPONSE);
             if(type != null){
-
                 if (type.trim().equals(Constants.REMOTE_MSG_INVITATION_ACCEPTED)){
                     try {
                         URL serverURL = new URL("https://meet.jit.si");
-                        JitsiMeetConferenceOptions conferenceOptions = new JitsiMeetConferenceOptions.Builder()
-                                .setServerURL(serverURL)
-                                .setWelcomePageEnabled(false)
-                                .setRoom(meetingRoom)
 
-                                .build();
-                        JitsiMeetActivity.launch(OutgoingInvitationActivity.this, conferenceOptions);
+                        JitsiMeetConferenceOptions.Builder builder = new JitsiMeetConferenceOptions.Builder();
+                        builder.setServerURL(serverURL);
+                        builder.setRoom(meetingRoom);
+
+                        if(meetingType.equals("audio")){
+                            builder.setAudioOnly(true);
+                        }
+
+                        JitsiMeetActivity.launch(OutgoingInvitationActivity.this, builder.build());
                         finish();
 
                     } catch (Exception exception){
@@ -209,8 +246,14 @@ public class OutgoingInvitationActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
+        countDownTimer.onFinish();
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(
                 invitationResponseReceiver
         );
+    }
+
+    private Bitmap getUserImage(String encodedImage){
+        byte[] bytes = Base64.decode(encodedImage, Base64.DEFAULT);
+        return BitmapFactory.decodeByteArray(bytes,0, bytes.length);
     }
 }

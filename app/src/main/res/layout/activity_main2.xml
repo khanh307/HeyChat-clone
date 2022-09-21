@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activities.MainActivity2"
-    android:background="@color/colorPrimary">
+    android:background="@drawable/bg">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar_layout"
@@ -14,6 +14,7 @@
         android:fitsSystemWindows="true">
 
         <net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
+            android:background="@drawable/bg"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fitsSystemWindows="true"
@@ -21,17 +22,19 @@
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:title="Chat with friends"
             android:id="@+id/collapsing_toolbar"
-            app:expandedTitleTextColor="@color/white"
-            app:collapsedTitleTextColor="@color/white"
+            app:expandedTitleTextColor="@color/black"
+            app:collapsedTitleTextColor="@color/black"
             app:expandedTitleGravity="top"
             app:collapsedTitleGravity="left|top"
             app:expandedTitleTextAppearance="@style/ExpandedAppBar"
             app:collapsedTitleTextAppearance="@style/CollapsedAppBar"
+            app:expandedTitleMarginTop="@dimen/_10sdp"
             app:expandedTitleMarginStart="@dimen/_30sdp"
             app:expandedTitleMarginEnd="@dimen/_100sdp">
 
             <androidx.appcompat.widget.Toolbar
                 app:contentInsetStartWithNavigation="0dp"
+                android:background="@android:color/transparent"
                 app:titleMarginTop="@dimen/_3sdp"
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
@@ -40,7 +43,62 @@
                 android:layout_gravity="top">
             </androidx.appcompat.widget.Toolbar>
 
+            <LinearLayout
+                android:layout_marginLeft="@dimen/_20sdp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                app:layout_collapseMode="parallax"
+                app:layout_collapseParallaxMultiplier="1.7"
+                android:layout_marginTop="@dimen/_15sdp">
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/search_button"
+                    android:layout_width="@dimen/_40sdp"
+                    android:layout_height="@dimen/_40sdp"
+                    android:layout_marginRight="5dp"
+                    app:cardCornerRadius="1000dp"
+                    android:padding="@dimen/_10sdp"
+                    app:cardBackgroundColor="#FAB19A">
+
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:padding="@dimen/_10sdp"
+                        android:layout_width="@dimen/_40sdp"
+                        android:layout_height="@dimen/_40sdp"
+                        android:src="@drawable/ic_search"
+                        app:civ_circle_background_color="#FAB19A"/>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/group_button"
+                    android:layout_width="@dimen/_40sdp"
+                    android:layout_height="@dimen/_40sdp"
+                    android:layout_marginRight="5dp"
+                    app:cardCornerRadius="1000dp"
+                    android:padding="@dimen/_10sdp"
+                    app:cardBackgroundColor="#FAB19A">
+
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:padding="@dimen/_9sdp"
+                        android:layout_width="@dimen/_40sdp"
+                        android:layout_height="@dimen/_40sdp"
+                        android:src="@drawable/ic_group_add"
+                        app:civ_circle_background_color="#FAB19A"/>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerviewUserOnline"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/_40sdp">
+                </androidx.recyclerview.widget.RecyclerView>
+
+            </LinearLayout>
+
+
+
             <com.google.android.material.tabs.TabLayout
+                android:layout_marginLeft="@dimen/_10sdp"
+                android:layout_marginRight="@dimen/_10sdp"
                 android:id="@+id/tablayout"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_30sdp"

@@ -25,6 +25,7 @@ import com.example.heychat.R;
 import com.example.heychat.activities.ChatActivity;
 import com.example.heychat.activities.SearchActivity;
 import com.example.heychat.activities.UsersActivity;
+import com.example.heychat.adapters.ChatBottomSheetFragment;
 import com.example.heychat.adapters.UsersAdapter;
 import com.example.heychat.listeners.UserListener;
 import com.example.heychat.models.User;
@@ -170,8 +171,11 @@ public class ConfigFragment extends Fragment implements UserListener{
 
     @Override
     public void onUserClicker(User user) {
-        Intent intent = new Intent(getContext(), ChatActivity.class);
-        intent.putExtra(Constants.KEY_USER, user);
-        startActivity(intent);
+//        Intent intent = new Intent(getContext(), ChatActivity.class);
+//        intent.putExtra(Constants.KEY_USER, user);
+//        startActivity(intent);
+
+        ChatBottomSheetFragment bottomSheetDialog = ChatBottomSheetFragment.newInstance(user);
+        bottomSheetDialog.show(getActivity().getSupportFragmentManager(), bottomSheetDialog.getTag());
     }
 }

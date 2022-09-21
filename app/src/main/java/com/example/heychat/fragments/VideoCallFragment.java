@@ -161,12 +161,24 @@ public class VideoCallFragment extends Fragment implements CallListener{
 
     @Override
     public void initiateVideoCall(User user) {
-        if(user.token == null && user.token.trim().isEmpty()){
+        if(user.token == null || user.token.trim().isEmpty()){
             Toast.makeText(getContext(), user.name +"is not available for video call", Toast.LENGTH_SHORT).show();
         } else {
             Intent intent = new Intent(getContext(), OutgoingInvitationActivity.class);
             intent.putExtra("user", user);
             intent.putExtra("type", "video");
+            startActivity(intent);
+        }
+    }
+
+    @Override
+    public void initiateAudioCall(User user) {
+        if(user.token == null || user.token.trim().isEmpty()){
+            Toast.makeText(getContext(), user.name +"is not available for audio call", Toast.LENGTH_SHORT).show();
+        } else {
+            Intent intent = new Intent(getContext(), OutgoingInvitationActivity.class);
+            intent.putExtra("user", user);
+            intent.putExtra("type", "audio");
             startActivity(intent);
         }
     }

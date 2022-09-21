@@ -22,12 +22,22 @@
         android:textStyle="bold"/>
 
     <ImageView
-        android:id="@+id/call_btn"
+        android:id="@+id/audio_call_btn"
+        android:layout_width="@dimen/_40sdp"
+        android:layout_height="@dimen/_40sdp"
+        android:src="@drawable/ic_call"
+        android:layout_toStartOf="@+id/video_call_btn"/>
+
+    <ImageView
+        android:id="@+id/video_call_btn"
         android:layout_width="@dimen/_40sdp"
         android:layout_height="@dimen/_40sdp"
         android:src="@drawable/ic_video_call"
         android:layout_alignParentRight="true"
         android:layout_marginRight="@dimen/_10sdp" />
+
+
+
 
 
 

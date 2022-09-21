@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 
 import com.example.heychat.adapters.UsersAdapter;
@@ -11,6 +13,7 @@ import com.example.heychat.databinding.ActivitySearchBinding;
 import com.example.heychat.listeners.UserListener;
 import com.example.heychat.models.User;
 import com.example.heychat.ultilities.Constants;
+import com.facebook.react.views.textinput.ReactTextChangedEvent;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -22,7 +25,8 @@ public class SearchActivity extends AppCompatActivity implements UserListener {
 
     private ActivitySearchBinding binding;
     FirebaseFirestore database;
-    private  UsersAdapter usersAdapter;
+    private UsersAdapter usersAdapter;
+    private List<User> users;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +34,9 @@ public class SearchActivity extends AppCompatActivity implements UserListener {
         binding = ActivitySearchBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setListeners();
+        users = new ArrayList<>();
+        usersAdapter = new UsersAdapter(users, this);
+        binding.userRecyclerView.setAdapter(usersAdapter);
     }
 
     private void searchUser(String searchText) {
@@ -40,9 +47,9 @@ public class SearchActivity extends AppCompatActivity implements UserListener {
                 .addOnCompleteListener(task -> {
                     loading(false);
                     if(task.isSuccessful() && task.getResult() != null){
-                        List<User> users = new ArrayList<>();
+                        users.clear();
                         for(QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()){
-                            if (searchText.equals(queryDocumentSnapshot.getString(Constants.KEY_EMAIL))){
+                            if (queryDocumentSnapshot.getString(Constants.KEY_EMAIL).contains(searchText) && !searchText.isEmpty()){
                                 User user = new User();
                                 user.name = queryDocumentSnapshot.getString(Constants.KEY_NAME);
                                 user.email = queryDocumentSnapshot.getString(Constants.KEY_EMAIL);
@@ -52,11 +59,8 @@ public class SearchActivity extends AppCompatActivity implements UserListener {
                                 users.add(user);
                             }
                         }
-                        if (users.size() > 0){
-                            usersAdapter = new UsersAdapter(users, this);
-                            binding.userRecyclerView.setAdapter(usersAdapter);
-                            binding.userRecyclerView.setVisibility(View.VISIBLE);
-                        } else{
+                        usersAdapter.notifyDataSetChanged();
+                        if (users.size() <= 0){
                             showErrorMessage();
                         }
                     } else{
@@ -69,6 +73,22 @@ public class SearchActivity extends AppCompatActivity implements UserListener {
     private void setListeners () {
         binding.imageBack.setOnClickListener(v -> onBackPressed());
         binding.imageSearch.setOnClickListener(view -> searchUser(binding.edtSearch.getText().toString().trim()));
+        binding.edtSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                searchUser(binding.edtSearch.getText().toString().trim());
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
     }
 
     private void showErrorMessage(){
