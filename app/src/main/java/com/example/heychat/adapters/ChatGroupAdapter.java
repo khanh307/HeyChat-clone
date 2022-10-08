@@ -10,14 +10,16 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.heychat.databinding.ItemContainerReceivedMessageBinding;
+import com.example.heychat.databinding.ItemContainerReceivedMessageGroupBinding;
 import com.example.heychat.databinding.ItemContainerSentMessageBinding;
 import com.example.heychat.models.ChatMessage;
 import com.example.heychat.ultilities.Constants;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.List;
 
-public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class ChatGroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final List<ChatMessage> chatMessages;
     private Bitmap receiverProfileImage;
@@ -32,7 +34,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         receiverProfileImage = bitmap;
     }
 
-    public ChatAdapter(List<ChatMessage> chatMessages, Bitmap receiverProfileImage, String senderId) {
+    public ChatGroupAdapter(List<ChatMessage> chatMessages, Bitmap receiverProfileImage, String senderId) {
         this.chatMessages = chatMessages;
         this.receiverProfileImage = receiverProfileImage;
         this.senderId = senderId;
@@ -51,7 +53,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             );
         } else {
             return new ReceivedMessageViewHolder(
-                    ItemContainerReceivedMessageBinding.inflate(
+                    ItemContainerReceivedMessageGroupBinding.inflate(
                             LayoutInflater.from(parent.getContext()),
                             parent,
                             false
@@ -65,11 +67,11 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (getItemViewType(position) == VIEW_TYPE_SENT) {
             ((SentMessageViewHolder) holder).setTextData(chatMessages.get(position));
         } else if (getItemViewType(position) == VIEW_TYPE_RECEIVED) {
-            ((ReceivedMessageViewHolder) holder).setTextData(chatMessages.get(position), receiverProfileImage);
+            ((ReceivedMessageViewHolder) holder).setTextData(chatMessages.get(position));
         } else if (getItemViewType(position) == VIEW_TYPE_SENT_IMAGE) {
             ((SentMessageViewHolder) holder).setImageData(chatMessages.get(position));
         } else if (getItemViewType(position) == VIEW_TYPE_RECEIVED_IMAGE) {
-            ((ReceivedMessageViewHolder) holder).setImageData(chatMessages.get(position), receiverProfileImage);
+            ((ReceivedMessageViewHolder) holder).setImageData(chatMessages.get(position));
         }
     }
 
@@ -124,44 +126,55 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             byte[] bytes = Base64.decode(encodedImage, Base64.DEFAULT);
             return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
         }
-
     }
 
     static class ReceivedMessageViewHolder extends RecyclerView.ViewHolder {
 
-        private final ItemContainerReceivedMessageBinding binding;
+        private final ItemContainerReceivedMessageGroupBinding binding;
 
-        ReceivedMessageViewHolder(ItemContainerReceivedMessageBinding itemContainerReceivedMessageBinding) {
-            super(itemContainerReceivedMessageBinding.getRoot());
-            binding = itemContainerReceivedMessageBinding;
+        ReceivedMessageViewHolder(ItemContainerReceivedMessageGroupBinding ItemContainerReceivedMessageGroupBinding) {
+            super(ItemContainerReceivedMessageGroupBinding.getRoot());
+            binding = ItemContainerReceivedMessageGroupBinding;
         }
 
-        void setTextData(ChatMessage chatMessage, Bitmap receiverProfileImage) {
+        void setTextData(ChatMessage chatMessage) {
             binding.textMessage.setText(chatMessage.message);
             binding.textMessage.setVisibility(View.VISIBLE);
             binding.textDateTime.setText(chatMessage.dateTime);
 
-            if (receiverProfileImage != null) {
-                binding.imageProfile.setImageBitmap(receiverProfileImage);
-            }
+            FirebaseFirestore database = FirebaseFirestore.getInstance();
+            database.collection(Constants.KEY_COLLECTION_USER).document(chatMessage.senderId)
+                    .get().addOnSuccessListener(documentSnapshot -> {
+                        binding.imageProfile.setImageBitmap(getBitmapFromEncodedString(documentSnapshot.getString(Constants.KEY_IMAGE)));
+                        binding.textName.setText(documentSnapshot.getString(Constants.KEY_NAME));
+                    });
+
         }
 
-        void setImageData(ChatMessage chatMessage, Bitmap receiverProfileImage) {
+        void setImageData(ChatMessage chatMessage) {
             binding.layoutMessage.setBackground(null);
-            binding.imageMessage.setImageBitmap(getUserImage(chatMessage.message));
+            binding.imageMessage.setImageBitmap(getBitmapFromEncodedString(chatMessage.message));
             binding.imageMessage.setVisibility(View.VISIBLE);
             binding.textDateTime.setText(chatMessage.dateTime);
 
-            if (receiverProfileImage != null) {
-                binding.imageProfile.setImageBitmap(receiverProfileImage);
-            }
+            FirebaseFirestore database = FirebaseFirestore.getInstance();
+            database.collection(Constants.KEY_COLLECTION_USER).document(chatMessage.senderId)
+                    .get().addOnSuccessListener(documentSnapshot -> {
+                        binding.imageProfile.setImageBitmap(getBitmapFromEncodedString(documentSnapshot.getString(Constants.KEY_IMAGE)));
+                        binding.textName.setText(documentSnapshot.getString(Constants.KEY_NAME));
+                    });
         }
 
-        private static Bitmap getUserImage(String encodedImage) {
-            byte[] bytes = Base64.decode(encodedImage, Base64.DEFAULT);
-            return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        private Bitmap getBitmapFromEncodedString(String encodedImage) {
+            if (encodedImage != null) {
+                byte[] bytes = Base64.decode(encodedImage, Base64.DEFAULT);
+                return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+            } else {
+                return null;
+            }
         }
 
     }
 
 }
+

@@ -31,6 +31,11 @@ public class Constants {
     public static final String REMOTE_MSG_DATA = "data";
     public static final String REMOTE_MSG_REGISTRATION_IDS = "registration_ids";
 
+    public static final String KEY_MESSAGE_TYPE = "type";
+    public static final String MESSAGE_TEXT = "text";
+    public static final String MESSAGE_IMAGE = "image";
+    public static final String MESSAGE_FILE = "file";
+
     public static final String REMOTE_MSG_TYPE = "type";
     public static final String REMOTE_MSG_INVITATION = "invitation";
     public static final String REMOTE_MSG_MEETING_TYPE = "meetingtype";
@@ -42,6 +47,15 @@ public class Constants {
     public static final String REMOTE_MSG_INVITATION_CANCELLED = "cancelled";
 
     public static final String REMOTE_MSG_MEETING_ROOM = "meetingRoom";
+
+    public static final String KEY_COLLECTION_GROUP = "groups";
+    public static final String KEY_GROUP_NAME = "groupName";
+    public static final String KEY_GROUP_IMAGE = "GroupImage";
+    public static final String KEY_GROUP_ID = "groupId";
+    public static final String KEY_GROUP_MEMBER = "groupMember";
+    public static final String KEY_GROUP = "group";
+    public static final String KEY_COLLECTION_CHAT_GROUPS = "chatGroups";
+    public static final String KEY_COLLECTION_CONVERSATIONS_GROUP = "conversationGroups";
 
 
     public static HashMap<String, String> remoteMsgHeaders = null;

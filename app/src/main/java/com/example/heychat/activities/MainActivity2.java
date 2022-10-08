@@ -71,7 +71,10 @@ public class MainActivity2 extends AppCompatActivity implements UserListener {
         binding.searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), SearchActivity.class);
+//                Intent intent = new Intent(getApplicationContext(), SearchActivity.class);
+//                startActivity(intent);
+
+                Intent intent = new Intent(getApplicationContext(), GroupActivity.class);
                 startActivity(intent);
             }
         });

@@ -10,33 +10,33 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.heychat.databinding.ItemContainerUserBinding;
-import com.example.heychat.listeners.UserListener;
-import com.example.heychat.models.User;
+import com.example.heychat.listeners.GroupListener;
+import com.example.heychat.models.Group;
 
 import java.util.List;
 
-public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder>{
+public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHolder>{
 
-    private final List<User> users;
-    private final UserListener userListener;
+    private final List<Group> users;
+    private final GroupListener groupListener;
 
-    public UsersAdapter(List<User> users, UserListener userListener) {
+    public GroupAdapter(List<Group> users ,GroupListener groupListener) {
         this.users = users;
-        this.userListener = userListener;
+        this.groupListener = groupListener;
     }
 
     @NonNull
     @Override
-    public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public GroupViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         ItemContainerUserBinding itemContainerUserBinding = ItemContainerUserBinding.inflate(
                 LayoutInflater.from(parent.getContext()),parent,false
         );
 
-        return new UserViewHolder(itemContainerUserBinding);
+        return new GroupViewHolder(itemContainerUserBinding);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull GroupViewHolder holder, int position) {
         holder.setUserData(users.get(position));
     }
 
@@ -45,19 +45,18 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         return users.size();
     }
 
-    class UserViewHolder extends RecyclerView.ViewHolder{
+    class GroupViewHolder extends RecyclerView.ViewHolder{
 
         ItemContainerUserBinding binding;
-        UserViewHolder(ItemContainerUserBinding itemContainerUserBinding){
+        GroupViewHolder(ItemContainerUserBinding itemContainerUserBinding){
             super(itemContainerUserBinding.getRoot());
             binding = itemContainerUserBinding;
         }
 
-        void setUserData(User user){
-            binding.textName.setText(user.name);
-            binding.textEmail.setText(user.email);
-            binding.imageProfile.setImageBitmap(getUserImage(user.image));
-            binding.getRoot().setOnClickListener(v -> userListener.onUserClicker(user));
+        void setUserData(Group group){
+            binding.textName.setText(group.name);
+            binding.imageProfile.setImageBitmap(getUserImage(group.image));
+            binding.getRoot().setOnClickListener(v -> groupListener.onGroupClicker(group));
         }
 
     }
@@ -66,5 +65,4 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         byte[] bytes = Base64.decode(encodedImage, Base64.DEFAULT);
         return BitmapFactory.decodeByteArray(bytes,0, bytes.length);
     }
-
 }

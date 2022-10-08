@@ -28,16 +28,21 @@ import com.example.heychat.activities.UsersActivity;
 import com.example.heychat.adapters.ChatBottomSheetFragment;
 import com.example.heychat.adapters.UsersAdapter;
 import com.example.heychat.listeners.UserListener;
+import com.example.heychat.models.ChatMessage;
 import com.example.heychat.models.User;
 import com.example.heychat.ultilities.Constants;
 import com.example.heychat.ultilities.PreferenceManager;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ConfigFragment extends Fragment implements UserListener{
@@ -48,6 +53,7 @@ public class ConfigFragment extends Fragment implements UserListener{
     private RecyclerView userRecyclerView;
     private ProgressBar progressBar;
     private TextView textErrorMessage;
+    private FirebaseFirestore database;
 
     public ConfigFragment() {
         // Required empty public constructor
@@ -59,6 +65,7 @@ public class ConfigFragment extends Fragment implements UserListener{
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_config, container, false);
+        database = FirebaseFirestore.getInstance();
         preferenceManager = new PreferenceManager(getContext());
         userRecyclerView = view.findViewById(R.id.config_RecyclerView);
         progressBar = view.findViewById(R.id.config_progressBar);
@@ -71,7 +78,6 @@ public class ConfigFragment extends Fragment implements UserListener{
     private void getUsers(){
         loading(true);
         getContactList();
-        FirebaseFirestore database = FirebaseFirestore.getInstance();
         database.collection(Constants.KEY_COLLECTION_USER)
                 .get()
                 .addOnCompleteListener(task -> {
@@ -84,7 +90,6 @@ public class ConfigFragment extends Fragment implements UserListener{
                                 continue;
                             }
                             for (int i = 0; i < contactList.size(); i++){
-                                System.out.println(contactList.get(i));
                                 if (contactList.get(i).equals(queryDocumentSnapshot.getString(Constants.KEY_EMAIL))){
                                     User user = new User();
                                     user.name = queryDocumentSnapshot.getString(Constants.KEY_NAME);
@@ -100,14 +105,10 @@ public class ConfigFragment extends Fragment implements UserListener{
                             usersAdapter = new UsersAdapter(users, this);
                             userRecyclerView.setAdapter(usersAdapter);
                             userRecyclerView.setVisibility(View.VISIBLE);
-                        } else{
-                            showErrorMessage();
                         }
-                    } else{
-                        showErrorMessage();
                     }
                 });
-
+        database.collection(Constants.KEY_COLLECTION_USER).addSnapshotListener(eventListener);
     }
 
     private void requestPermission(){
@@ -168,6 +169,44 @@ public class ConfigFragment extends Fragment implements UserListener{
         }
     }
 
+    private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
+        if(error != null){
+            return;
+        }
+        if (value != null){
+
+            database.collection(Constants.KEY_COLLECTION_USER)
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        loading(false);
+                        String currentUserId = preferenceManager.getString(Constants.KEY_USER_ID);
+                        if(task.isSuccessful() && task.getResult() != null){
+                            List<User> users = new ArrayList<>();
+                            for(QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()){
+                                if(currentUserId.equals(queryDocumentSnapshot.getId())){
+                                    continue;
+                                }
+                                for (int i = 0; i < contactList.size(); i++){
+                                    if (contactList.get(i).equals(queryDocumentSnapshot.getString(Constants.KEY_EMAIL))){
+                                        User user = new User();
+                                        user.name = queryDocumentSnapshot.getString(Constants.KEY_NAME);
+                                        user.email = queryDocumentSnapshot.getString(Constants.KEY_EMAIL);
+                                        user.image = queryDocumentSnapshot.getString(Constants.KEY_IMAGE);
+                                        user.token = queryDocumentSnapshot.getString(Constants.KEY_FCM_TOKEN);
+                                        user.id = queryDocumentSnapshot.getId();
+                                        users.add(user);
+                                    }
+                                }
+                            }
+                            if (users.size() > 0){
+                                usersAdapter = new UsersAdapter(users, this);
+                                userRecyclerView.setAdapter(usersAdapter);
+                                userRecyclerView.setVisibility(View.VISIBLE);
+                            }
+                        }
+                    });
+        }
+    };
 
     @Override
     public void onUserClicker(User user) {

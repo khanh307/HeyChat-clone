@@ -5,18 +5,20 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.heychat.R;
-import com.example.heychat.adapters.UsersAdapter;
-import com.example.heychat.listeners.UserListener;
+import com.example.heychat.adapters.UserSelectionAdapter;
+import com.example.heychat.listeners.UserSelectionListener;
 import com.example.heychat.models.User;
 import com.example.heychat.ultilities.Constants;
 import com.example.heychat.ultilities.PreferenceManager;
@@ -28,14 +30,14 @@ import com.gun0912.tedpermission.normal.TedPermission;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CreateGroupActivity extends AppCompatActivity {
-
+public class CreateGroupActivity extends AppCompatActivity implements UserSelectionListener {
     private PreferenceManager preferenceManager;
     private final ArrayList<String> contactList = new ArrayList<>();
-    private UsersAdapter usersAdapter;
+    private UserSelectionAdapter usersAdapter;
     private RecyclerView userRecyclerView;
     private ProgressBar progressBar;
     private TextView textErrorMessage;
+    private Button btnSelection;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -47,12 +49,29 @@ public class CreateGroupActivity extends AppCompatActivity {
         userRecyclerView = findViewById(R.id.create_group_RecyclerView);
         progressBar = findViewById(R.id.create_group_progressBar);
         textErrorMessage = findViewById(R.id.textError);
+        btnSelection = findViewById(R.id.btnSelection);
 
         requestPermission();
 
+        btnSelection.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                List<User> selectedUser = usersAdapter.getSelectedUser();
+                StringBuilder userPhones = new StringBuilder();
+                for (int i = 0; i < selectedUser.size(); i++) {
+                    userPhones.append(selectedUser.get(i).id).append(",");
+                }
+                userPhones.append(preferenceManager.getString(Constants.KEY_USER_ID));
+                Intent intent = new Intent(getApplicationContext(), SetInfoGroupActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                intent.putExtra(Constants.KEY_GROUP_MEMBER, userPhones.toString());
+                startActivity(intent);
+            }
+        });
+
     }
 
-    private void requestPermission(){
+    private void requestPermission() {
         PermissionListener permissionlistener = new PermissionListener() {
             @Override
             public void onPermissionGranted() {
@@ -72,7 +91,7 @@ public class CreateGroupActivity extends AppCompatActivity {
                 .check();
     }
 
-    private void getUsers(){
+    private void getUsers() {
         loading(true);
         getContactList();
         FirebaseFirestore database = FirebaseFirestore.getInstance();
@@ -81,15 +100,15 @@ public class CreateGroupActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     loading(false);
                     String currentUserId = preferenceManager.getString(Constants.KEY_USER_ID);
-                    if(task.isSuccessful() && task.getResult() != null){
+                    if (task.isSuccessful() && task.getResult() != null) {
                         List<User> users = new ArrayList<>();
-                        for(QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()){
-                            if(currentUserId.equals(queryDocumentSnapshot.getId())){
+                        for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
+                            if (currentUserId.equals(queryDocumentSnapshot.getId())) {
                                 continue;
                             }
-                            for (int i = 0; i < contactList.size(); i++){
+                            for (int i = 0; i < contactList.size(); i++) {
                                 System.out.println(contactList.get(i));
-                                if (contactList.get(i).equals(queryDocumentSnapshot.getString(Constants.KEY_EMAIL))){
+                                if (contactList.get(i).equals(queryDocumentSnapshot.getString(Constants.KEY_EMAIL))) {
                                     User user = new User();
                                     user.name = queryDocumentSnapshot.getString(Constants.KEY_NAME);
                                     user.email = queryDocumentSnapshot.getString(Constants.KEY_EMAIL);
@@ -100,19 +119,24 @@ public class CreateGroupActivity extends AppCompatActivity {
                                 }
                             }
                         }
-                        if (users.size() > 0){
-                            usersAdapter = new UsersAdapter(users, new UserListener() {
+                        if (users.size() > 0) {
+                            usersAdapter = new UserSelectionAdapter(users, new UserSelectionListener() {
                                 @Override
-                                public void onUserClicker(User user) {
-
+                                public void onUserSelection(Boolean isSelected) {
+                                    if (isSelected) {
+                                        btnSelection.setVisibility(View.VISIBLE);
+                                    } else {
+                                        btnSelection.setVisibility(View.GONE);
+                                    }
                                 }
+
                             });
                             userRecyclerView.setAdapter(usersAdapter);
                             userRecyclerView.setVisibility(View.VISIBLE);
-                        } else{
+                        } else {
                             showErrorMessage();
                         }
-                    } else{
+                    } else {
                         showErrorMessage();
                     }
                 });
@@ -131,7 +155,7 @@ public class CreateGroupActivity extends AppCompatActivity {
 
                         if (phoneCursor.moveToNext()) {
                             @SuppressLint("Range") String number = phoneCursor.getString(phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                            number = number.replaceAll("\\s+","");
+                            number = number.replaceAll("\\s+", "");
                             contactList.add(number.trim());
                         }
                     }
@@ -142,17 +166,25 @@ public class CreateGroupActivity extends AppCompatActivity {
     }
 
 
-
-    private void showErrorMessage(){
+    private void showErrorMessage() {
         textErrorMessage.setText(String.format("%s", "No user available"));
         textErrorMessage.setVisibility(View.VISIBLE);
     }
 
-    private void loading(Boolean isLoading){
-        if(isLoading){
+    private void loading(Boolean isLoading) {
+        if (isLoading) {
             progressBar.setVisibility(View.VISIBLE);
-        } else{
+        } else {
             progressBar.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    @Override
+    public void onUserSelection(Boolean isSelected) {
+        if (isSelected) {
+            btnSelection.setVisibility(View.VISIBLE);
+        } else {
+            btnSelection.setVisibility(View.GONE);
         }
     }
 

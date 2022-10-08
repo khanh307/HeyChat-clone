@@ -33,8 +33,11 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 
+import org.jitsi.meet.sdk.JitsiMeet;
 import org.jitsi.meet.sdk.JitsiMeetActivity;
 import org.jitsi.meet.sdk.JitsiMeetConferenceOptions;
+import org.jitsi.meet.sdk.JitsiMeetFragment;
+import org.jitsi.meet.sdk.JitsiMeetView;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -220,6 +223,7 @@ public class OutgoingInvitationActivity extends AppCompatActivity {
                         }
 
                         JitsiMeetActivity.launch(OutgoingInvitationActivity.this, builder.build());
+
                         finish();
 
                     } catch (Exception exception){

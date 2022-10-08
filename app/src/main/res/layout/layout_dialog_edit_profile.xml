@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/background_input"
     android:backgroundTint="@color/white"
     android:layout_margin="@dimen/_10sdp"
@@ -11,7 +12,7 @@
         android:id="@+id/dialog_title"
         android:layout_width="match_parent"
         android:layout_height="@dimen/_40sdp"
-        android:text="Change Language"
+        android:text="Edit profile"
         android:gravity="center"
         android:textSize="@dimen/_20ssp"
         android:background="@drawable/background_content_bottom"
@@ -25,25 +26,39 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-            <Switch
-                android:id="@+id/switch_english"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="English"
-                android:textSize="@dimen/_16ssp"
-                android:padding="@dimen/_10sdp"
-                android:drawableLeft="@drawable/ic_usa"/>
+       <de.hdodenhof.circleimageview.CircleImageView
+           android:id="@+id/image_edit_profile"
+           android:layout_width="@dimen/_100sdp"
+           android:layout_height="@dimen/_100sdp"
+           android:src="@drawable/profile"
+           android:layout_gravity="center_horizontal"
+           app:civ_border_width="1dp"
+           app:civ_border_color="@color/black" />
+        <TextView
+            android:id="@+id/change_image_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Change image"
+            android:textColor="@color/black"
+            android:layout_gravity="center_horizontal"/>
 
-            <Switch
-                android:drawableLeft="@drawable/ic_vietnam"
-                android:id="@+id/switch_vietnamese"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Tiếng Việt"
-                android:textSize="@dimen/_16ssp"
-                android:padding="@dimen/_10sdp"
-                android:checked="true"
-                />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:text="Name"
+            android:padding="@dimen/_5sdp"
+            android:textStyle="bold"
+            android:layout_marginLeft="@dimen/_15sdp"/>
+
+        <EditText
+            android:id="@+id/name_edit_text"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_35sdp"
+            android:background="@drawable/round_border"
+            android:paddingLeft="@dimen/_8sdp"
+            android:layout_marginLeft="@dimen/_8sdp"
+            android:layout_marginRight="@dimen/_8sdp"/>
 
     </LinearLayout>
 

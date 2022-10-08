@@ -79,4 +79,6 @@ dependencies {
     //jitsi meeting
     implementation ('org.jitsi.react:jitsi-meet-sdk:2.8.2') { transitive = true }
 
+    implementation 'gun0912.ted:tedbottompicker:2.0.1'
+
 }

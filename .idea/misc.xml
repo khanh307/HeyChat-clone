@@ -15,6 +15,7 @@
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/drawable/background_select.xml" value="0.148" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/drawable/background_sent_message.xml" value="0.167" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/drawable/background_tabs.xml" value="0.148" />
+        <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/drawable/background_user_selected.xml" value="0.167" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/drawable/card.xml" value="0.166" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/drawable/custom_progressbar.xml" value="0.166" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/drawable/ic_back.xml" value="0.167" />
@@ -23,15 +24,20 @@
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/drawable/round_border.xml" value="0.167" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/drawable/tab_background_selector.xml" value="0.166" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/drawable/tab_selected_backgroud.xml" value="0.166" />
+        <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/drawable/user_selection_background.xml" value="0.167" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/activity_chat.xml" value="0.25" />
+        <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/activity_chat_group.xml" value="0.25" />
+        <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/activity_conversation_group.xml" value="0.25" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/activity_create_group.xml" value="0.25" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/activity_demo.xml" value="0.25" />
+        <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/activity_group.xml" value="0.264" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/activity_incoming_invitation.xml" value="0.25" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/activity_main.xml" value="0.25" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/activity_main2.xml" value="0.264" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/activity_outgoing_invitation.xml" value="0.264" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/activity_search.xml" value="0.25" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/activity_send_otpactivity.xml" value="0.25" />
+        <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/activity_set_info_group.xml" value="0.25" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/activity_sign_in.xml" value="0.25" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/activity_sign_up.xml" value="0.25" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/activity_users.xml" value="0.25" />
@@ -42,10 +48,17 @@
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/fragment_home.xml" value="0.25" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/fragment_profile.xml" value="0.23148148148148148" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/fragment_video_call.xml" value="0.25" />
+        <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/item_container_received_message.xml" value="0.25" />
+        <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/item_container_received_message_group.xml" value="0.25" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/item_container_recent_conversion.xml" value="0.25" />
+        <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/item_container_sent_message.xml" value="0.25" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/item_container_user.xml" value="0.2359375" />
+        <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/item_container_user_selection.xml" value="0.25" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/layout_dialog.xml" value="0.25" />
+        <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/layout_dialog_edit_prifile.xml" value="0.25" />
+        <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/layout_dialog_edit_profile.xml" value="0.25" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/layout_dialog_language.xml" value="0.25" />
+        <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/layout_dialog_logout.xml" value="0.25" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/layout_dialog_textsize.xml" value="0.25" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/tab_title.xml" value="0.25" />
         <entry key="..\:/NLNGanh/App/HeyChat/app/src/main/res/layout/tablayout_custom.xml" value="0.24895833333333334" />

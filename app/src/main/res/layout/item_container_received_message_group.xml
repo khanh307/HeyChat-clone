@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/_8sdp"
@@ -15,6 +16,15 @@
         app:layout_constraintBottom_toBottomOf="@id/layout_message"
         app:layout_constraintStart_toStartOf="parent"
         app:riv_oval="true"/>
+
+    <TextView
+        android:id="@+id/textName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageProfile"
+        android:textColor="@color/black"
+        android:text="Text Name"/>
 
     <RelativeLayout
         android:id="@+id/layout_message"
@@ -53,10 +63,14 @@
         android:id="@+id/textDateTime"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_4sdp"
+        android:layout_marginTop="4dp"
+        android:text="Text Date Time"
         android:textColor="@color/secondary_text"
         android:textSize="@dimen/_8ssp"
-        app:layout_constraintStart_toStartOf="@+id/layout_message"
-        app:layout_constraintTop_toBottomOf="@id/layout_message"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/textName"
+        app:layout_constraintTop_toBottomOf="@id/layout_message"
+        android:paddingLeft="@dimen/_5sdp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
