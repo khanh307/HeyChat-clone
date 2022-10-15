@@ -1,10 +1,8 @@
 package com.example.heychat.fragments;
 
 import static android.app.Activity.RESULT_OK;
-
 import android.annotation.SuppressLint;
 import android.app.Dialog;
-
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,7 +12,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,12 +25,9 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.Fragment;
-
 import com.example.heychat.R;
 import com.example.heychat.activities.SignInActivity;
 import com.example.heychat.ultilities.Constants;
@@ -41,13 +35,11 @@ import com.example.heychat.ultilities.PreferenceManager;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -123,12 +115,7 @@ public class ProfileFragment extends Fragment {
                 dialog.dismiss();
             }
         });
-        no_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
+        no_btn.setOnClickListener(view -> dialog.dismiss());
 
         dialog.show();
     }
@@ -179,18 +166,8 @@ public class ProfileFragment extends Fragment {
         Button yes_btn = dialog.findViewById(R.id.yes_btn);
         Button no_btn = dialog.findViewById(R.id.no_btn);
 
-        yes_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showToast(size.getProgress()+"");
-            }
-        });
-        no_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
+        yes_btn.setOnClickListener(view -> showToast(size.getProgress()+""));
+        no_btn.setOnClickListener(view -> dialog.dismiss());
 
         dialog.show();
 
@@ -203,45 +180,33 @@ public class ProfileFragment extends Fragment {
         Button yes_btn = dialog.findViewById(R.id.yes_btn);
         Button no_btn = dialog.findViewById(R.id.no_btn);
 
-        vietnamese.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(b){
-                    english.setChecked(false);
-                } else{
-                    english.setChecked(true);
-                }
-            }
+        if (Objects.equals(preferenceManager.getString(Constants.KEY_LANGUAGE), "VI")){
+            vietnamese.setChecked(true);
+            english.setChecked(false);
+        } else {
+            vietnamese.setChecked(false);
+            english.setChecked(true);
+        }
+
+        vietnamese.setOnCheckedChangeListener((compoundButton, b) -> {
+            english.setChecked(!b);
         });
 
-        english.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(b){
-                    vietnamese.setChecked(false);
-                } else{
-                    vietnamese.setChecked(true);
-                }
-            }
+        english.setOnCheckedChangeListener((compoundButton, b) -> {
+            vietnamese.setChecked(!b);
         });
 
-        yes_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (vietnamese.isChecked()){
-                    showToast("vietnamese");
-                } else{
-                    showToast("english");
-                }
+        yes_btn.setOnClickListener(view -> {
+            if (vietnamese.isChecked()){
+                showToast("vietnamese");
+                preferenceManager.putString(Constants.KEY_LANGUAGE, "VI");
+            } else{
+                preferenceManager.putString(Constants.KEY_LANGUAGE, "EN");
+                showToast("english");
+            }
 
-            }
         });
-        no_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
+        no_btn.setOnClickListener(view -> dialog.dismiss());
 
 
         dialog.show();
@@ -254,12 +219,7 @@ public class ProfileFragment extends Fragment {
         Button no_btn = dialog.findViewById(R.id.no_btn);
 
         yes_btn.setOnClickListener(v-> signOut());
-        no_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
+        no_btn.setOnClickListener(view -> dialog.dismiss());
         dialog.show();
     }
 

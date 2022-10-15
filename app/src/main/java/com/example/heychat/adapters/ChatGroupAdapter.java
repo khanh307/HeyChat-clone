@@ -6,16 +6,15 @@ import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.heychat.databinding.ItemContainerReceivedMessageGroupBinding;
 import com.example.heychat.databinding.ItemContainerSentMessageBinding;
+import com.example.heychat.listeners.MessageListener;
 import com.example.heychat.models.ChatMessage;
 import com.example.heychat.ultilities.Constants;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 
 import java.util.List;
 
@@ -24,6 +23,7 @@ public class ChatGroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private final List<ChatMessage> chatMessages;
     private Bitmap receiverProfileImage;
     private final String senderId;
+    public MessageListener messageListener;
 
     private static final int VIEW_TYPE_SENT = 1;
     private static final int VIEW_TYPE_RECEIVED = 2;
@@ -34,10 +34,11 @@ public class ChatGroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         receiverProfileImage = bitmap;
     }
 
-    public ChatGroupAdapter(List<ChatMessage> chatMessages, Bitmap receiverProfileImage, String senderId) {
+    public ChatGroupAdapter(List<ChatMessage> chatMessages, Bitmap receiverProfileImage, String senderId , MessageListener messageListener) {
         this.chatMessages = chatMessages;
         this.receiverProfileImage = receiverProfileImage;
         this.senderId = senderId;
+        this.messageListener = messageListener;
     }
 
     @NonNull
@@ -128,13 +129,40 @@ public class ChatGroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         }
     }
 
-    static class ReceivedMessageViewHolder extends RecyclerView.ViewHolder {
+    class ReceivedMessageViewHolder extends RecyclerView.ViewHolder {
 
         private final ItemContainerReceivedMessageGroupBinding binding;
 
         ReceivedMessageViewHolder(ItemContainerReceivedMessageGroupBinding ItemContainerReceivedMessageGroupBinding) {
             super(ItemContainerReceivedMessageGroupBinding.getRoot());
             binding = ItemContainerReceivedMessageGroupBinding;
+            itemView.setOnClickListener(view -> {
+                if (messageListener != null){
+                    int pos = getAdapterPosition();
+                    chatMessages.get(pos).isSelected = !chatMessages.get(pos).isSelected;
+                    if (!chatMessages.get(pos).isSelected){
+                        binding.txtTranslate.setVisibility(View.GONE);
+                        binding.txtDelete.setVisibility(View.GONE);
+                    } else{
+                        binding.txtTranslate.setVisibility(View.VISIBLE);
+                        binding.txtDelete.setVisibility(View.VISIBLE);
+                    }
+                    messageListener.onMessageSelection(chatMessages.get(pos).isSelected);
+                }
+            });
+            binding.txtTranslate.setOnClickListener(view -> {
+                if (messageListener != null){
+                    int pos = getAdapterPosition();
+                    messageListener.onTranslateMessage(chatMessages.get(pos));
+                }
+            });
+
+            binding.txtDelete.setOnClickListener(view -> {
+                if (messageListener != null){
+                    int pos = getAdapterPosition();
+                    messageListener.onDeleteMessage(chatMessages.get(pos), pos, chatMessages);
+                }
+            });
         }
 
         void setTextData(ChatMessage chatMessage) {

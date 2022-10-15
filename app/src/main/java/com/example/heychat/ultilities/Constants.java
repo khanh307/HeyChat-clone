@@ -57,6 +57,8 @@ public class Constants {
     public static final String KEY_COLLECTION_CHAT_GROUPS = "chatGroups";
     public static final String KEY_COLLECTION_CONVERSATIONS_GROUP = "conversationGroups";
 
+    public static final String KEY_LANGUAGE = "language";
+
 
     public static HashMap<String, String> remoteMsgHeaders = null;
     public  static HashMap<String, String> getRemoteMsgHeaders(){

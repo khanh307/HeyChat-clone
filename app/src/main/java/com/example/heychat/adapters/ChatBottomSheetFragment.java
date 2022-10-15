@@ -1,32 +1,42 @@
 package com.example.heychat.adapters;
 
+import static android.app.Activity.RESULT_OK;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.speech.RecognizerIntent;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.heychat.R;
 import com.example.heychat.activities.OutgoingInvitationActivity;
 import com.example.heychat.listeners.CallListener;
+import com.example.heychat.listeners.MessageListener;
 import com.example.heychat.models.ChatMessage;
 import com.example.heychat.models.User;
 import com.example.heychat.network.ApiClient;
@@ -34,21 +44,28 @@ import com.example.heychat.network.ApiService;
 import com.example.heychat.ultilities.Constants;
 import com.example.heychat.ultilities.PreferenceManager;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.mlkit.nl.translate.TranslateLanguage;
+import com.google.mlkit.nl.translate.Translation;
+import com.google.mlkit.nl.translate.Translator;
+import com.google.mlkit.nl.translate.TranslatorOptions;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -58,19 +75,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
-
 import gun0912.tedbottompicker.TedBottomPicker;
-import gun0912.tedbottompicker.TedBottomSheetDialogFragment;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
+public class ChatBottomSheetFragment extends BottomSheetDialogFragment implements MessageListener {
 
-    private User myUser;
     private AppCompatImageView imageBack;
-    private TextView textName;
     private RecyclerView chatRecyclerView;
     private EditText inputeMessage;
     private View layoutSend, layoutImage, layoutAttact;
@@ -81,7 +95,6 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
     private FirebaseFirestore database;
     private String conversationId = null;
     private Boolean isReceiverAvailable = false;
-    private CallListener callListener;
     private String encodedImage;
 
     public static ChatBottomSheetFragment newInstance(User user) {
@@ -137,7 +150,8 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
         chatAdapter = new ChatAdapter(
                 chatMessages,
                 getBitmapFromEncodedString(receiverUser.image),
-                preferenceManager.getString(Constants.KEY_USER_ID)
+                preferenceManager.getString(Constants.KEY_USER_ID),
+                this
         );
         chatRecyclerView.setAdapter(chatAdapter);
         chatRecyclerView.setItemAnimator(null);
@@ -146,7 +160,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
 
     private void initView(View view){
         imageBack = view.findViewById(R.id.imageBack);
-        textName = view.findViewById(R.id.textName);
+        TextView textName = view.findViewById(R.id.textName);
         chatRecyclerView = view.findViewById(R.id.chatRecyclerView);
         inputeMessage = view.findViewById(R.id.inputeMessage);
         layoutSend = view.findViewById(R.id.layoutSend);
@@ -319,6 +333,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
             for (DocumentChange documentChange : value.getDocumentChanges()){
                 if (documentChange.getType() == DocumentChange.Type.ADDED){
                     ChatMessage chatMessage = new ChatMessage();
+                    chatMessage.id = documentChange.getDocument().getId();
                     chatMessage.type = documentChange.getDocument().getString(Constants.KEY_MESSAGE_TYPE);
                     chatMessage.senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
                     chatMessage.receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
@@ -363,11 +378,11 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
 
         layoutImage.setOnClickListener(v->requestPermission());
 
-        callListener = new CallListener() {
+        CallListener callListener = new CallListener() {
             @Override
             public void initiateVideoCall(User user) {
-                if(user.token == null || user.token.trim().isEmpty()){
-                    Toast.makeText(getContext(), user.name +"is not available for video call", Toast.LENGTH_SHORT).show();
+                if (user.token == null || user.token.trim().isEmpty()) {
+                    Toast.makeText(getContext(), user.name + "is not available for video call", Toast.LENGTH_SHORT).show();
                 } else {
                     Intent intent = new Intent(getContext(), OutgoingInvitationActivity.class);
                     intent.putExtra("user", user);
@@ -378,8 +393,8 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
 
             @Override
             public void initiateAudioCall(User user) {
-                if(user.token == null || user.token.trim().isEmpty()){
-                    Toast.makeText(getContext(), user.name +"is not available for audio call", Toast.LENGTH_SHORT).show();
+                if (user.token == null || user.token.trim().isEmpty()) {
+                    Toast.makeText(getContext(), user.name + "is not available for audio call", Toast.LENGTH_SHORT).show();
                 } else {
                     Intent intent = new Intent(getContext(), OutgoingInvitationActivity.class);
                     intent.putExtra("user", user);
@@ -413,16 +428,13 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
     private void openImagePicker() {
 
         TedBottomPicker.with(this.getActivity())
-                .show(new TedBottomSheetDialogFragment.OnImageSelectedListener() {
-                    @Override
-                    public void onImageSelected(Uri uri) {
-                        try {
-                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri);
-                            encodedImage = encodeImage(bitmap);
-                            sendImage();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                .show(uri -> {
+                    try {
+                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri);
+                        encodedImage = encodeImage(bitmap);
+                        sendImage();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 });
 
@@ -535,10 +547,102 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
         }
     };
 
+    @Override
+    public void onMessageSelection(Boolean isSelected) {
 
-    //    @Override
-//    public void onResume() {
-//        super.onResume();
-//        listenAvailabilityOfReceiver();
-//    }
+    }
+
+    @Override
+    public void onTranslateMessage(ChatMessage chatMessage) {
+
+        TranslatorOptions options;
+        if (preferenceManager.getString(Constants.KEY_LANGUAGE) == "VI"){
+            options = new TranslatorOptions.Builder()
+                    .setSourceLanguage(TranslateLanguage.ENGLISH)
+                    .setTargetLanguage(TranslateLanguage.VIETNAMESE)
+                    .build();
+        } else {
+            options = new TranslatorOptions.Builder()
+                    .setSourceLanguage(TranslateLanguage.VIETNAMESE)
+                    .setTargetLanguage(TranslateLanguage.ENGLISH)
+                    .build();
+        }
+
+        Translator englishVITranslator = Translation.getClient(options);
+
+        getLifecycle().addObserver(englishVITranslator);
+
+
+
+            englishVITranslator.downloadModelIfNeeded().addOnSuccessListener(unused -> {
+
+
+                englishVITranslator.translate(chatMessage.message)
+                        .addOnSuccessListener(new OnSuccessListener<String>() {
+                            @Override
+                            public void onSuccess(String s) {
+                                chatMessage.message = s;
+                                chatAdapter.notifyDataSetChanged();
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                showToast(e.getMessage());
+                            }
+                        });
+
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    showToast(e.getMessage());
+                }
+            });
+
+    }
+
+    private void updateDataOnFB(String key){
+        database.collection(Constants.KEY_COLLECTION_CHAT)
+                .document(key)
+                .delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        showToast("Delete Message Successfully!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        showToast(e.getMessage());
+                    }
+                });
+    }
+
+    private void updateConversionAfterDeleteMessage(String message, String type, Date time){
+        DocumentReference documentReference =
+                database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(conversationId);
+        documentReference.update(
+                Constants.KEY_MESSAGE_TYPE, type,
+                Constants.KEY_LAST_MESSAGE, message,
+                Constants.KEY_TIMESTAMP, time
+        );
+    }
+
+    @Override
+    public void onDeleteMessage(ChatMessage chatMessage, int pos, List<ChatMessage> lastMessages) {
+        chatMessages.remove(pos);
+        chatAdapter.notifyItemRemoved(pos);
+        updateDataOnFB(chatMessage.id);
+        if (lastMessages.size() >= 1){
+            updateConversionAfterDeleteMessage(lastMessages.get(lastMessages.size()-1).message,
+                    lastMessages.get(lastMessages.size()-1).type,
+                    lastMessages.get(lastMessages.size()-1).dataObject);
+        } else if (lastMessages.size() == 0){
+            database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(conversationId).delete();
+        }
+
+    }
+
+
 }

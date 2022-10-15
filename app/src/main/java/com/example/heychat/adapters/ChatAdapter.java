@@ -12,16 +12,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.heychat.databinding.ItemContainerReceivedMessageBinding;
 import com.example.heychat.databinding.ItemContainerSentMessageBinding;
+import com.example.heychat.listeners.MessageListener;
 import com.example.heychat.models.ChatMessage;
 import com.example.heychat.ultilities.Constants;
-
 import java.util.List;
 
 public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private final List<ChatMessage> chatMessages;
+    public  List<ChatMessage> chatMessages;
     private Bitmap receiverProfileImage;
     private final String senderId;
+    public  MessageListener messageListener;
 
     private static final int VIEW_TYPE_SENT = 1;
     private static final int VIEW_TYPE_RECEIVED = 2;
@@ -32,10 +33,12 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         receiverProfileImage = bitmap;
     }
 
-    public ChatAdapter(List<ChatMessage> chatMessages, Bitmap receiverProfileImage, String senderId) {
-        this.chatMessages = chatMessages;
+    public ChatAdapter(List<ChatMessage> chatMessages, Bitmap receiverProfileImage, String senderId, MessageListener messageListener) {
+
         this.receiverProfileImage = receiverProfileImage;
         this.senderId = senderId;
+        this.chatMessages = chatMessages;
+        this.messageListener = messageListener;
     }
 
     @NonNull
@@ -97,13 +100,34 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return VIEW_TYPE_RECEIVED;
     }
 
-    static class SentMessageViewHolder extends RecyclerView.ViewHolder {
+    class SentMessageViewHolder extends RecyclerView.ViewHolder {
 
         private final ItemContainerSentMessageBinding binding;
 
         SentMessageViewHolder(ItemContainerSentMessageBinding itemContainerSentMessageBinding) {
             super(itemContainerSentMessageBinding.getRoot());
             binding = itemContainerSentMessageBinding;
+
+            itemView.setOnClickListener(view -> {
+                if (messageListener != null){
+                    int pos = getAdapterPosition();
+                    chatMessages.get(pos).isSelected = !chatMessages.get(pos).isSelected;
+                    if (!chatMessages.get(pos).isSelected){
+                        binding.txtDelete.setVisibility(View.GONE);
+                    } else{
+                        binding.txtDelete.setVisibility(View.VISIBLE);
+                    }
+                    messageListener.onMessageSelection(chatMessages.get(pos).isSelected);
+                }
+            });
+
+            binding.txtDelete.setOnClickListener(view -> {
+                if (messageListener != null){
+                    int pos = getAdapterPosition();
+                    messageListener.onDeleteMessage(chatMessages.get(pos), pos, chatMessages);
+                }
+            });
+
         }
 
         void setTextData(ChatMessage chatMessage) {
@@ -120,20 +144,47 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             binding.textDateTime.setText(chatMessage.dateTime);
         }
 
-        private static Bitmap getUserImage(String encodedImage) {
+        private Bitmap getUserImage(String encodedImage) {
             byte[] bytes = Base64.decode(encodedImage, Base64.DEFAULT);
             return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
         }
 
     }
 
-    static class ReceivedMessageViewHolder extends RecyclerView.ViewHolder {
+    class ReceivedMessageViewHolder extends RecyclerView.ViewHolder {
 
         private final ItemContainerReceivedMessageBinding binding;
 
         ReceivedMessageViewHolder(ItemContainerReceivedMessageBinding itemContainerReceivedMessageBinding) {
             super(itemContainerReceivedMessageBinding.getRoot());
             binding = itemContainerReceivedMessageBinding;
+            itemView.setOnClickListener(view -> {
+                if (messageListener != null){
+                    int pos = getAdapterPosition();
+                    chatMessages.get(pos).isSelected = !chatMessages.get(pos).isSelected;
+                    if (!chatMessages.get(pos).isSelected){
+                        binding.txtTranslate.setVisibility(View.GONE);
+                        binding.txtDelete.setVisibility(View.GONE);
+                    } else{
+                        binding.txtTranslate.setVisibility(View.VISIBLE);
+                        binding.txtDelete.setVisibility(View.VISIBLE);
+                    }
+                    messageListener.onMessageSelection(chatMessages.get(pos).isSelected);
+                }
+            });
+            binding.txtTranslate.setOnClickListener(view -> {
+                if (messageListener != null){
+                    int pos = getAdapterPosition();
+                    messageListener.onTranslateMessage(chatMessages.get(pos));
+                }
+            });
+
+            binding.txtDelete.setOnClickListener(view -> {
+                if (messageListener != null){
+                    int pos = getAdapterPosition();
+                    messageListener.onDeleteMessage(chatMessages.get(pos), pos, chatMessages);
+                }
+            });
         }
 
         void setTextData(ChatMessage chatMessage, Bitmap receiverProfileImage) {
@@ -144,6 +195,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             if (receiverProfileImage != null) {
                 binding.imageProfile.setImageBitmap(receiverProfileImage);
             }
+
         }
 
         void setImageData(ChatMessage chatMessage, Bitmap receiverProfileImage) {
@@ -157,7 +209,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
         }
 
-        private static Bitmap getUserImage(String encodedImage) {
+        private Bitmap getUserImage(String encodedImage) {
             byte[] bytes = Base64.decode(encodedImage, Base64.DEFAULT);
             return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
         }

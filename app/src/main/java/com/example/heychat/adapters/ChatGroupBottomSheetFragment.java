@@ -6,6 +6,8 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -13,10 +15,14 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +35,7 @@ import com.example.heychat.R;
 import com.example.heychat.activities.ChatGroupActivity;
 import com.example.heychat.activities.ConversationGroupActivity;
 import com.example.heychat.listeners.CallListener;
+import com.example.heychat.listeners.MessageListener;
 import com.example.heychat.models.ChatMessage;
 import com.example.heychat.models.Group;
 import com.example.heychat.models.User;
@@ -37,6 +44,8 @@ import com.example.heychat.network.ApiService;
 import com.example.heychat.ultilities.Constants;
 import com.example.heychat.ultilities.PreferenceManager;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.firebase.firestore.DocumentChange;
@@ -45,6 +54,10 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.mlkit.nl.translate.TranslateLanguage;
+import com.google.mlkit.nl.translate.Translation;
+import com.google.mlkit.nl.translate.Translator;
+import com.google.mlkit.nl.translate.TranslatorOptions;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
 
@@ -69,7 +82,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment {
+public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment implements MessageListener {
 
 
     private AppCompatImageView imageBack;
@@ -140,7 +153,8 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment {
         chatAdapter = new ChatGroupAdapter(
                 chatMessages,
                 getBitmapFromEncodedString(receiverUser.image),
-                preferenceManager.getString(Constants.KEY_USER_ID)
+                preferenceManager.getString(Constants.KEY_USER_ID),
+                this
         );
         chatRecyclerView.setAdapter(chatAdapter);
         chatRecyclerView.setItemAnimator(null);
@@ -220,6 +234,7 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment {
             for (DocumentChange documentChange : value.getDocumentChanges()) {
                 if (documentChange.getType() == DocumentChange.Type.ADDED) {
                     ChatMessage chatMessage = new ChatMessage();
+                    chatMessage.id = documentChange.getDocument().getId();
                     chatMessage.type = documentChange.getDocument().getString(Constants.KEY_MESSAGE_TYPE);
                     chatMessage.senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
                     chatMessage.receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
@@ -554,5 +569,65 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment {
         Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    public void onMessageSelection(Boolean isSelected) {
 
+    }
+
+    @Override
+    public void onTranslateMessage(ChatMessage chatMessage) {
+        TranslatorOptions options;
+        if (preferenceManager.getString(Constants.KEY_LANGUAGE) == "VI"){
+            options = new TranslatorOptions.Builder()
+                    .setSourceLanguage(TranslateLanguage.ENGLISH)
+                    .setTargetLanguage(TranslateLanguage.VIETNAMESE)
+                    .build();
+        } else {
+            options = new TranslatorOptions.Builder()
+                    .setSourceLanguage(TranslateLanguage.VIETNAMESE)
+                    .setTargetLanguage(TranslateLanguage.ENGLISH)
+                    .build();
+        }
+
+        Translator englishVITranslator = Translation.getClient(options);
+
+        getLifecycle().addObserver(englishVITranslator);
+
+
+
+        englishVITranslator.downloadModelIfNeeded().addOnSuccessListener(unused -> {
+
+
+            englishVITranslator.translate(chatMessage.message)
+                    .addOnSuccessListener(new OnSuccessListener<String>() {
+                        @Override
+                        public void onSuccess(String s) {
+                            if (s != chatMessage.message){
+                                chatMessage.message = s;
+                                showToast(s);
+                                chatAdapter.notifyDataSetChanged();
+                            } else showToast("Can't translate it!");
+
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            showToast(e.getMessage());
+                        }
+                    });
+
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                showToast(e.getMessage());
+            }
+        });
+
+    }
+
+    @Override
+    public void onDeleteMessage(ChatMessage chatMessage, int pos, List<ChatMessage> chatMessages) {
+
+    }
 }

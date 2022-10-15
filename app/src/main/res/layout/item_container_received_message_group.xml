@@ -45,12 +45,12 @@
         app:layout_constraintWidth_percent="0.75">
 
         <TextView
-            android:visibility="gone"
             android:id="@+id/textMessage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
-            android:textSize="@dimen/_13ssp" />
+            android:textSize="@dimen/_13ssp"
+            android:visibility="gone" />
 
         <ImageView
             android:id="@+id/imageMessage"
@@ -60,17 +60,47 @@
     </RelativeLayout>
 
     <TextView
+        android:id="@+id/txtTranslate"
+        android:layout_width="@dimen/_55sdp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/background_translate"
+        android:backgroundTint="#009688"
+        android:padding="@dimen/_5sdp"
+        android:text="Translate"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_10ssp"
+        android:visibility="gone"
+        android:layout_marginStart="@dimen/_10sdp"
+        app:layout_constraintStart_toEndOf="@+id/textDateTime"
+        app:layout_constraintTop_toBottomOf="@+id/layout_message" />
+
+    <TextView
+        android:id="@+id/txtDelete"
+        android:layout_width="@dimen/_55sdp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/background_translate"
+        android:backgroundTint="#2196F3"
+        android:padding="@dimen/_5sdp"
+        android:text="Delete"
+        android:gravity="center"
+        android:layout_marginStart="@dimen/_3sdp"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_10ssp"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="@+id/txtTranslate"
+        app:layout_constraintTop_toBottomOf="@+id/layout_message" />
+
+    <TextView
         android:id="@+id/textDateTime"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
+        android:paddingLeft="@dimen/_5sdp"
         android:text="Text Date Time"
         android:textColor="@color/secondary_text"
         android:textSize="@dimen/_8ssp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/textName"
-        app:layout_constraintTop_toBottomOf="@id/layout_message"
-        android:paddingLeft="@dimen/_5sdp"/>
+        app:layout_constraintTop_toBottomOf="@id/layout_message" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

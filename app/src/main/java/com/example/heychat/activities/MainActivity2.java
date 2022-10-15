@@ -79,12 +79,9 @@ public class MainActivity2 extends AppCompatActivity implements UserListener {
             }
         });
 
-        binding.groupButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), CreateGroupActivity.class);
-                startActivity(intent);
-            }
+        binding.groupButton.setOnClickListener(view -> {
+            Intent intent = new Intent(getApplicationContext(), CreateGroupActivity.class);
+            startActivity(intent);
         });
 
     }

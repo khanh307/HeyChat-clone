@@ -24,8 +24,8 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class UserSelectionAdapter extends RecyclerView.Adapter<UserSelectionAdapter.UserSelectionViewHolder>{
 
-    private List<User> users;
-    private UserSelectionListener userSelectionListener;
+    private final List<User> users;
+    private final UserSelectionListener userSelectionListener;
 
     public UserSelectionAdapter(List<User> users, UserSelectionListener userSelectionListener) {
         this.users = users;
@@ -93,22 +93,19 @@ public class UserSelectionAdapter extends RecyclerView.Adapter<UserSelectionAdap
                 viewBackground.setBackgroundResource(R.drawable.user_selection_background);
                 imageSelected.setVisibility(View.GONE);
             }
-            layoutUserSelection.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (user.isSelected){
-                        viewBackground.setBackgroundResource(R.drawable.user_selection_background);
-                        imageSelected.setVisibility(View.GONE);
-                        user.isSelected = false;
-                        if (getSelectedUser().size() == 0){
-                            userSelectionListener.onUserSelection(false);
-                        }
-                    } else{
-                        viewBackground.setBackgroundResource(R.drawable.background_user_selected);
-                        imageSelected.setVisibility(View.VISIBLE);
-                        user.isSelected = true;
-                        userSelectionListener.onUserSelection(true);
+            layoutUserSelection.setOnClickListener(view -> {
+                if (user.isSelected){
+                    viewBackground.setBackgroundResource(R.drawable.user_selection_background);
+                    imageSelected.setVisibility(View.GONE);
+                    user.isSelected = false;
+                    if (getSelectedUser().size() == 0){
+                        userSelectionListener.onUserSelection(false);
                     }
+                } else{
+                    viewBackground.setBackgroundResource(R.drawable.background_user_selected);
+                    imageSelected.setVisibility(View.VISIBLE);
+                    user.isSelected = true;
+                    userSelectionListener.onUserSelection(true);
                 }
             });
         }

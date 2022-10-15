@@ -151,30 +151,17 @@ public class SetInfoGroupActivity extends AppCompatActivity {
         userDetail.put(Constants.KEY_GROUP_ID, groupID);
         db.collection(Constants.KEY_COLLECTION_USER)
                 .whereEqualTo(Constants.KEY_EMAIL, member)
-                .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful() && !task.getResult().isEmpty()) {
-                            DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
-                            String documentID = documentSnapshot.getId();
-                            db.collection(Constants.KEY_COLLECTION_USER)
-                                    .document(documentID)
-                                    .update(userDetail)
-                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void unused) {
-                                            showToast("Successful");
-                                        }
-                                    })
-                                    .addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            showToast("Failed");
-                                        }
-                                    });
-                        } else {
-                            showToast("Failed");
-                        }
+                .get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && !task.getResult().isEmpty()) {
+                        DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
+                        String documentID = documentSnapshot.getId();
+                        db.collection(Constants.KEY_COLLECTION_USER)
+                                .document(documentID)
+                                .update(userDetail)
+                                .addOnSuccessListener(unused -> showToast("Successful"))
+                                .addOnFailureListener(e -> showToast("Failed"));
+                    } else {
+                        showToast("Failed");
                     }
                 });
     }

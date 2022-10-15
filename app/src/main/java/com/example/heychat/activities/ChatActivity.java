@@ -19,6 +19,7 @@ import com.example.heychat.adapters.ChatAdapter;
 
 import com.example.heychat.databinding.ActivityChatBinding;
 import com.example.heychat.listeners.CallListener;
+import com.example.heychat.listeners.MessageListener;
 import com.example.heychat.models.ChatMessage;
 import com.example.heychat.models.User;
 import com.example.heychat.network.ApiClient;
@@ -51,7 +52,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ChatActivity extends BaseActivity{
+public class ChatActivity extends BaseActivity implements MessageListener {
 
     private ActivityChatBinding binding;
     private User receiverUser;
@@ -116,7 +117,8 @@ public class ChatActivity extends BaseActivity{
         chatAdapter = new ChatAdapter(
                 chatMessages,
                 getBitmapFromEncodedString(receiverUser.image),
-                preferenceManager.getString(Constants.KEY_USER_ID)
+                preferenceManager.getString(Constants.KEY_USER_ID),
+                this
         );
         binding.chatRecyclerView.setAdapter(chatAdapter);
         binding.chatRecyclerView.setItemAnimator(null);
@@ -371,5 +373,21 @@ public class ChatActivity extends BaseActivity{
     protected void onResume() {
         super.onResume();
        listenAvailabilityOfReceiver();
+    }
+
+
+    @Override
+    public void onMessageSelection(Boolean isSelected) {
+
+    }
+
+    @Override
+    public void onTranslateMessage(ChatMessage chatMessage) {
+
+    }
+
+    @Override
+    public void onDeleteMessage(ChatMessage chatMessage, int pos,List<ChatMessage> chatMessages ) {
+
     }
 }
