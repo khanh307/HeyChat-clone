@@ -6,8 +6,6 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -15,14 +13,10 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,13 +26,11 @@ import androidx.appcompat.widget.AppCompatImageView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.heychat.R;
-import com.example.heychat.activities.ChatGroupActivity;
-import com.example.heychat.activities.ConversationGroupActivity;
+import com.example.heychat.activities.InfoGroupActivity;
 import com.example.heychat.listeners.CallListener;
 import com.example.heychat.listeners.MessageListener;
 import com.example.heychat.models.ChatMessage;
 import com.example.heychat.models.Group;
-import com.example.heychat.models.User;
 import com.example.heychat.network.ApiClient;
 import com.example.heychat.network.ApiService;
 import com.example.heychat.ultilities.Constants;
@@ -86,7 +78,7 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
 
 
     private AppCompatImageView imageBack;
-    private TextView textName;
+    private static TextView textName;
     private RecyclerView chatRecyclerView;
     private EditText inputeMessage;
     private View layoutSend, layoutImage, layoutAttact;
@@ -105,7 +97,6 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
         Bundle bundle = new Bundle();
         bundle.putSerializable(Constants.KEY_GROUP, group);
         chatBottomSheetFragment.setArguments(bundle);
-
         return chatBottomSheetFragment;
     }
 
@@ -172,6 +163,14 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
         layoutAttact = view.findViewById(R.id.layoutAttact);
 
         textName.setText(receiverUser.name);
+        textName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getContext(), InfoGroupActivity.class);
+                intent.putExtra(Constants.KEY_GROUP, receiverUser);
+                startActivity(intent);
+            }
+        });
 
         inputeMessage.addTextChangedListener(new TextWatcher() {
             @Override
@@ -604,6 +603,7 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
                         public void onSuccess(String s) {
                             if (s != chatMessage.message){
                                 chatMessage.message = s;
+                                chatMessage.isSelected = false;
                                 showToast(s);
                                 chatAdapter.notifyDataSetChanged();
                             } else showToast("Can't translate it!");

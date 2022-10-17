@@ -328,6 +328,17 @@ public class ChatGroupActivity extends BaseActivity implements MessageListener {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         });
+
+        binding.textName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), InfoGroupActivity.class);
+                intent.putExtra(Constants.KEY_GROUP, receiverUser);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            }
+        });
+
         binding.layoutSend.setOnClickListener(v -> sendMessage());
 
 //        CallListener callListener = new CallListener() {

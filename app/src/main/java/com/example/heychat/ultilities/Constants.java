@@ -56,6 +56,7 @@ public class Constants {
     public static final String KEY_GROUP = "group";
     public static final String KEY_COLLECTION_CHAT_GROUPS = "chatGroups";
     public static final String KEY_COLLECTION_CONVERSATIONS_GROUP = "conversationGroups";
+    public static final String KEY_GROUP_OWNER = "owner";
 
     public static final String KEY_LANGUAGE = "language";
 

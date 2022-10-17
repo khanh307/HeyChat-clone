@@ -582,6 +582,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
                             @Override
                             public void onSuccess(String s) {
                                 chatMessage.message = s;
+                                chatMessage.isSelected = false;
                                 chatAdapter.notifyDataSetChanged();
                             }
                         })
