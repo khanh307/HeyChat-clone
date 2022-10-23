@@ -2,6 +2,8 @@ package com.example.heychat.ultilities;
 
 import java.util.HashMap;
 
+import retrofit2.http.PUT;
+
 public class Constants {
     public static final String KEY_COLLECTION_USER = "users";
     public static final String KEY_NAME = "name";
@@ -59,6 +61,11 @@ public class Constants {
     public static final String KEY_GROUP_OWNER = "owner";
 
     public static final String KEY_LANGUAGE = "language";
+    public static final String KEY_PRIVATE_ACCOUNT_NAME = "privateName";
+    public static final String KEY_COLLECTION_ROOM = "rooms";
+    public static final String KEY_AMOUNT_OF_ROOM = "amount";
+    public static final String KEY_ROOM_MEMBER = "roomMember";
+    public static final String KEY_COLLECTION_PRIVATE_CHAT = "privateChats";
 
 
     public static HashMap<String, String> remoteMsgHeaders = null;

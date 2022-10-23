@@ -62,16 +62,15 @@
             android:layout_width="@dimen/_40sdp"
             android:layout_height="@dimen/_40sdp"
             android:background="@drawable/background_image"
-            android:backgroundTint="@color/primary"
             android:layout_marginBottom="@dimen/_5sdp"
             android:layout_gravity="center"
             app:cardCornerRadius="1000dp">
 
             <ImageView
-                android:layout_width="@dimen/_35sdp"
-                android:layout_height="@dimen/_35sdp"
+                android:layout_width="@dimen/_40sdp"
+                android:layout_height="@dimen/_40sdp"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_edit"
+                android:src="@drawable/ic_list"
                 android:padding="@dimen/_5sdp"/>
         </androidx.cardview.widget.CardView>
 
@@ -104,16 +103,15 @@
             android:layout_width="@dimen/_40sdp"
             android:layout_height="@dimen/_40sdp"
             android:background="@drawable/background_image"
-            android:backgroundTint="@color/primary"
             android:layout_marginBottom="@dimen/_5sdp"
             android:layout_gravity="center"
             app:cardCornerRadius="1000dp">
 
             <ImageView
-                android:layout_width="@dimen/_35sdp"
-                android:layout_height="@dimen/_35sdp"
+                android:layout_width="@dimen/_43sdp"
+                android:layout_height="@dimen/_43sdp"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_edit"
+                android:src="@drawable/ic_add"
                 android:padding="@dimen/_5sdp"/>
         </androidx.cardview.widget.CardView>
 
@@ -144,19 +142,18 @@
         app:layout_constraintTop_toBottomOf="@+id/layoutAddMember">
 
         <androidx.cardview.widget.CardView
-            android:layout_width="@dimen/_40sdp"
-            android:layout_height="@dimen/_40sdp"
+            android:layout_width="@dimen/_43sdp"
+            android:layout_height="@dimen/_43sdp"
             android:background="@drawable/background_image"
-            android:backgroundTint="@color/primary"
             android:layout_marginBottom="@dimen/_5sdp"
             android:layout_gravity="center"
             app:cardCornerRadius="1000dp">
 
             <ImageView
-                android:layout_width="@dimen/_35sdp"
-                android:layout_height="@dimen/_35sdp"
+                android:layout_width="@dimen/_40sdp"
+                android:layout_height="@dimen/_40sdp"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_edit"
+                android:src="@drawable/ic_delete"
                 android:padding="@dimen/_5sdp"/>
         </androidx.cardview.widget.CardView>
 
@@ -187,19 +184,18 @@
         app:layout_constraintTop_toBottomOf="@+id/layoutDeleteMember">
 
         <androidx.cardview.widget.CardView
-            android:layout_width="@dimen/_40sdp"
-            android:layout_height="@dimen/_40sdp"
+            android:layout_width="@dimen/_43sdp"
+            android:layout_height="@dimen/_43sdp"
             android:background="@drawable/background_image"
-            android:backgroundTint="@color/primary"
             android:layout_marginBottom="@dimen/_5sdp"
             android:layout_gravity="center"
             app:cardCornerRadius="1000dp">
 
             <ImageView
-                android:layout_width="@dimen/_35sdp"
-                android:layout_height="@dimen/_35sdp"
+                android:layout_width="@dimen/_43sdp"
+                android:layout_height="@dimen/_43sdp"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_edit"
+                android:src="@drawable/ic_leader"
                 android:padding="@dimen/_5sdp"/>
         </androidx.cardview.widget.CardView>
 
@@ -232,16 +228,15 @@
             android:layout_width="@dimen/_40sdp"
             android:layout_height="@dimen/_40sdp"
             android:background="@drawable/background_image"
-            android:backgroundTint="@color/primary"
             android:layout_marginBottom="@dimen/_5sdp"
             android:layout_gravity="center"
             app:cardCornerRadius="1000dp">
 
             <ImageView
-                android:layout_width="@dimen/_35sdp"
-                android:layout_height="@dimen/_35sdp"
+                android:layout_width="@dimen/_43sdp"
+                android:layout_height="@dimen/_43sdp"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_edit"
+                android:src="@drawable/ic_exit"
                 android:padding="@dimen/_5sdp"/>
         </androidx.cardview.widget.CardView>
 
@@ -275,16 +270,15 @@
             android:layout_width="@dimen/_40sdp"
             android:layout_height="@dimen/_40sdp"
             android:background="@drawable/background_image"
-            android:backgroundTint="@color/primary"
             android:layout_marginBottom="@dimen/_5sdp"
             android:layout_gravity="center"
             app:cardCornerRadius="1000dp">
 
             <ImageView
-                android:layout_width="@dimen/_35sdp"
-                android:layout_height="@dimen/_35sdp"
+                android:layout_width="@dimen/_43sdp"
+                android:layout_height="@dimen/_43sdp"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_edit"
+                android:src="@drawable/ic_ban"
                 android:padding="@dimen/_5sdp"/>
         </androidx.cardview.widget.CardView>
 

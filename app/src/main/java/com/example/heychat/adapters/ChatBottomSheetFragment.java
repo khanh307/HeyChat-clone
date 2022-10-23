@@ -1,32 +1,20 @@
 package com.example.heychat.adapters;
 
-import static android.app.Activity.RESULT_OK;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.speech.RecognizerIntent;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -44,13 +32,8 @@ import com.example.heychat.network.ApiService;
 import com.example.heychat.ultilities.Constants;
 import com.example.heychat.ultilities.PreferenceManager;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -75,7 +58,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import gun0912.tedbottompicker.TedBottomPicker;
 import retrofit2.Call;
@@ -210,6 +192,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
         message.put(Constants.KEY_TIMESTAMP, new Date());
         message.put(Constants.KEY_MESSAGE_TYPE, Constants.MESSAGE_TEXT);
         database.collection(Constants.KEY_COLLECTION_CHAT).add(message);
+        chatAdapter.notifyDataSetChanged();
         if(conversationId != null){
             updateConversion(inputeMessage.getText().toString(), Constants.MESSAGE_TEXT);
         } else {
@@ -324,6 +307,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
                 .addSnapshotListener(eventListener);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
         if(error != null){
             return;
@@ -340,6 +324,9 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
                     chatMessage.message = documentChange.getDocument().getString(Constants.KEY_MESSAGE);
                     chatMessage.dateTime = getReadableDateTime(documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP));
                     chatMessage.dataObject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
+                    if (Objects.equals(chatMessage.senderId, preferenceManager.getString(Constants.KEY_USER_ID)))
+                        chatMessage.model = "sender";
+                    else chatMessage.model = "receiver";
                     chatMessages.add(chatMessage);
                 }
             }
@@ -529,7 +516,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
     }
 
     private String getReadableDateTime(Date date){
-        return new SimpleDateFormat("dd MMMM, yyyy - hh:mm a", Locale.getDefault()).format(date);
+        return new SimpleDateFormat("dd MMMM, yyyy\nhh:mm a", Locale.getDefault()).format(date);
     }
 
     private void checkForConversionRemotely(String senderId, String receiverId){
@@ -552,11 +539,12 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
 
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onTranslateMessage(ChatMessage chatMessage) {
 
         TranslatorOptions options;
-        if (preferenceManager.getString(Constants.KEY_LANGUAGE) == "VI"){
+        if (Objects.equals(preferenceManager.getString(Constants.KEY_LANGUAGE), "VI")){
             options = new TranslatorOptions.Builder()
                     .setSourceLanguage(TranslateLanguage.ENGLISH)
                     .setTargetLanguage(TranslateLanguage.VIETNAMESE)
@@ -574,31 +562,13 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
 
 
 
-            englishVITranslator.downloadModelIfNeeded().addOnSuccessListener(unused -> {
-
-
-                englishVITranslator.translate(chatMessage.message)
-                        .addOnSuccessListener(new OnSuccessListener<String>() {
-                            @Override
-                            public void onSuccess(String s) {
-                                chatMessage.message = s;
-                                chatMessage.isSelected = false;
-                                chatAdapter.notifyDataSetChanged();
-                            }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                showToast(e.getMessage());
-                            }
-                        });
-
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    showToast(e.getMessage());
-                }
-            });
+            englishVITranslator.downloadModelIfNeeded().addOnSuccessListener(unused -> englishVITranslator.translate(chatMessage.message)
+                    .addOnSuccessListener(s -> {
+                        chatMessage.message = s;
+                        chatMessage.isSelected = false;
+                        chatAdapter.notifyDataSetChanged();
+                    })
+                    .addOnFailureListener(e -> showToast(e.getMessage()))).addOnFailureListener(e -> showToast(e.getMessage()));
 
     }
 
@@ -606,18 +576,8 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
         database.collection(Constants.KEY_COLLECTION_CHAT)
                 .document(key)
                 .delete()
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void unused) {
-                        showToast("Delete Message Successfully!");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        showToast(e.getMessage());
-                    }
-                });
+                .addOnSuccessListener(unused -> showToast("Delete Message Successfully!"))
+                .addOnFailureListener(e -> showToast(e.getMessage()));
     }
 
     private void updateConversionAfterDeleteMessage(String message, String type, Date time){

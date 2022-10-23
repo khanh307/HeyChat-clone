@@ -9,11 +9,14 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.util.Base64;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
@@ -46,6 +49,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -111,7 +115,11 @@ public class InfoGroupActivity extends AppCompatActivity implements UserListener
 
     private void setListener() {
 
-        imageBack.setOnClickListener(view -> onBackPressed());
+        imageBack.setOnClickListener(view -> {
+            Intent intent = new Intent(getApplicationContext(), MainActivity2.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+        });
 
         layoutDisbandingGroup.setOnClickListener(view -> disbandingGroup());
 
@@ -168,15 +176,14 @@ public class InfoGroupActivity extends AppCompatActivity implements UserListener
         });
 
 
-        users = new ArrayList<>();
-        addGroupSelectionAdapter = new AddGroupSelectionAdapter(users, this);
         layoutAddMember.setOnClickListener(view -> {
             final Dialog dialog = openDialog(R.layout.layout_dialog_add_group_member);
             userRecyclerView = dialog.findViewById(R.id.userRecyclerView);
             Button no_btn = dialog.findViewById(R.id.no_btn);
             Button btnAdd = dialog.findViewById(R.id.btnAdd);
 
-
+            users = new ArrayList<>();
+            addGroupSelectionAdapter = new AddGroupSelectionAdapter(users, this);
             userRecyclerView.setAdapter(addGroupSelectionAdapter);
             userRecyclerView.setVisibility(View.VISIBLE);
             getUsers("add");
@@ -189,15 +196,31 @@ public class InfoGroupActivity extends AppCompatActivity implements UserListener
                     String userID = selectedUser.get(i).id;
                     database.collection(Constants.KEY_COLLECTION_GROUP)
                             .document(group.id)
-                            .collection(Constants.KEY_GROUP_MEMBER).document(userID)
-                            .set(id)
-                            .addOnSuccessListener(unused -> database.collection(Constants.KEY_COLLECTION_USER)
-                                    .document(userID)
-                                    .collection(Constants.KEY_GROUP_ID)
-                                    .document(group.id)
-                                    .set(id));
+                            .collection(Constants.KEY_GROUP_MEMBER)
+                            .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                    for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()){
+                                        if (!userID.equals(queryDocumentSnapshot.getId())){
+                                            database.collection(Constants.KEY_COLLECTION_GROUP)
+                                                    .document(group.id)
+                                                    .collection(Constants.KEY_GROUP_MEMBER).document(userID)
+                                                    .set(id)
+                                                    .addOnSuccessListener(unused -> {
+                                                        database.collection(Constants.KEY_COLLECTION_USER)
+                                                                .document(userID)
+                                                                .collection(Constants.KEY_GROUP_ID)
+                                                                .document(group.id)
+                                                                .set(id);
+                                                        dialog.dismiss();
+
+                                                    });
+                                        }
+                                    }
+                                }
+                            });
+
                 }
-                dialog.dismiss();
                 showToast("Add Member Successfully");
             });
 
@@ -236,8 +259,8 @@ public class InfoGroupActivity extends AppCompatActivity implements UserListener
                     .get()
                     .addOnCompleteListener(task12 -> {
                         for (QueryDocumentSnapshot queryDocumentSnapshot1 : task12.getResult()) {
-
                             for (int i = 0; i < contactList.size(); i++) {
+
                                 if (contactList.get(i).equals(queryDocumentSnapshot1.getString(Constants.KEY_EMAIL))) {
                                     User user = new User();
                                     user.name = queryDocumentSnapshot1.getString(Constants.KEY_NAME);
@@ -247,9 +270,9 @@ public class InfoGroupActivity extends AppCompatActivity implements UserListener
                                     user.id = queryDocumentSnapshot1.getId();
                                     users.add(user);
                                 }
+
                             }
                             addGroupSelectionAdapter.notifyDataSetChanged();
-
                         }
 
                     });
@@ -357,6 +380,7 @@ public class InfoGroupActivity extends AppCompatActivity implements UserListener
 
                     database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
                             .whereEqualTo(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
+                            .whereEqualTo(Constants.KEY_RECEIVER_ID, group.id)
                             .get().addOnCompleteListener(task -> {
                                 for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult())
                                     database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
