@@ -426,7 +426,7 @@ public class ChatGroupActivity extends BaseActivity implements MessageListener {
     }
 
     @Override
-    public void onTranslateMessage(ChatMessage chatMessage) {
+    public void onTranslateMessage(ChatMessage chatMessage, int pos) {
 
     }
 

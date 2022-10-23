@@ -151,7 +151,7 @@ public class PrivateChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             binding.txtTranslate.setOnClickListener(view -> {
                 if (messageListener != null){
                     int pos = getAdapterPosition();
-                    messageListener.onTranslateMessage(chatMessages.get(pos));
+                    messageListener.onTranslateMessage(chatMessages.get(pos), pos);
                 }
             });
         }

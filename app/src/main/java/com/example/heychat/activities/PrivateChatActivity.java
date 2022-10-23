@@ -233,7 +233,7 @@ public class PrivateChatActivity extends BaseActivity implements MessageListener
 
     @SuppressLint("NotifyDataSetChanged")
     @Override
-    public void onTranslateMessage(ChatMessage chatMessage) {
+    public void onTranslateMessage(ChatMessage chatMessage, int pos) {
         TranslatorOptions options;
         if (Objects.equals(preferenceManager.getString(Constants.KEY_LANGUAGE), "VI")){
             options = new TranslatorOptions.Builder()
@@ -256,8 +256,7 @@ public class PrivateChatActivity extends BaseActivity implements MessageListener
         englishVITranslator.downloadModelIfNeeded().addOnSuccessListener(unused -> englishVITranslator.translate(chatMessage.message)
                 .addOnSuccessListener(s -> {
                     chatMessage.message = s;
-                    chatMessage.isSelected = false;
-                    chatAdapter.notifyDataSetChanged();
+                    chatAdapter.notifyItemChanged(pos);
                 })
                 .addOnFailureListener(e -> showToast(e.getMessage()))).addOnFailureListener(e -> showToast(e.getMessage()));
     }

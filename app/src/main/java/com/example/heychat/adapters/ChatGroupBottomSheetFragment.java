@@ -577,7 +577,7 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
     }
 
     @Override
-    public void onTranslateMessage(ChatMessage chatMessage) {
+    public void onTranslateMessage(ChatMessage chatMessage, int pos) {
         TranslatorOptions options;
         if (preferenceManager.getString(Constants.KEY_LANGUAGE) == "VI"){
             options = new TranslatorOptions.Builder()
@@ -606,9 +606,7 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
                         public void onSuccess(String s) {
                             if (s != chatMessage.message){
                                 chatMessage.message = s;
-                                chatMessage.isSelected = false;
-                                showToast(s);
-                                chatAdapter.notifyDataSetChanged();
+                                chatAdapter.notifyItemChanged(pos);
                             } else showToast("Can't translate it!");
 
                         }
@@ -626,6 +624,7 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
                 showToast(e.getMessage());
             }
         });
+
 
     }
 

@@ -541,7 +541,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
 
     @SuppressLint("NotifyDataSetChanged")
     @Override
-    public void onTranslateMessage(ChatMessage chatMessage) {
+    public void onTranslateMessage(ChatMessage chatMessage, int pos) {
 
         TranslatorOptions options;
         if (Objects.equals(preferenceManager.getString(Constants.KEY_LANGUAGE), "VI")){
@@ -565,8 +565,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
             englishVITranslator.downloadModelIfNeeded().addOnSuccessListener(unused -> englishVITranslator.translate(chatMessage.message)
                     .addOnSuccessListener(s -> {
                         chatMessage.message = s;
-                        chatMessage.isSelected = false;
-                        chatAdapter.notifyDataSetChanged();
+                        chatAdapter.notifyItemChanged(pos);
                     })
                     .addOnFailureListener(e -> showToast(e.getMessage()))).addOnFailureListener(e -> showToast(e.getMessage()));
 

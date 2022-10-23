@@ -7,7 +7,7 @@ import java.util.List;
 public interface MessageListener {
 
     void onMessageSelection(Boolean isSelected);
-    void onTranslateMessage(ChatMessage chatMessage);
+    void onTranslateMessage(ChatMessage chatMessage, int pos);
     void onDeleteMessage(ChatMessage chatMessage, int pos, List<ChatMessage> chatMessages);
 
 }

@@ -135,7 +135,6 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 chatMessages.get(0).lastReceiver = true;
 
 
-
         return VIEW_TYPE_RECEIVED;
     }
 
@@ -221,7 +220,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             binding.txtTranslate.setOnClickListener(view -> {
                 if (messageListener != null) {
                     int pos = getAdapterPosition();
-                    messageListener.onTranslateMessage(chatMessages.get(pos));
+                    messageListener.onTranslateMessage(chatMessages.get(pos), pos);
                 }
             });
 

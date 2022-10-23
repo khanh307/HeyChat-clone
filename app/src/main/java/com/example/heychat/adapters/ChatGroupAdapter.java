@@ -3,24 +3,19 @@ package com.example.heychat.adapters;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.heychat.databinding.ItemContainerReceivedMessageGroupBinding;
 import com.example.heychat.databinding.ItemContainerSentMessageBinding;
 import com.example.heychat.listeners.MessageListener;
 import com.example.heychat.models.ChatMessage;
 import com.example.heychat.ultilities.Constants;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-
 import java.util.List;
-import java.util.Objects;
+
 
 public class ChatGroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -197,7 +192,7 @@ public class ChatGroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             binding.txtTranslate.setOnClickListener(view -> {
                 if (messageListener != null) {
                     int pos = getAdapterPosition();
-                    messageListener.onTranslateMessage(chatMessages.get(pos));
+                    messageListener.onTranslateMessage(chatMessages.get(pos), pos);
                 }
             });
 
