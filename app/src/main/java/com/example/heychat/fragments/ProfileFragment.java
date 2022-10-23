@@ -324,12 +324,13 @@ public class ProfileFragment extends Fragment {
 
         yes_btn.setOnClickListener(view -> {
             if (vietnamese.isChecked()) {
-                showToast("vietnamese");
+                showToast("VIETNAMESE");
                 preferenceManager.putString(Constants.KEY_LANGUAGE, "VI");
             } else {
+                showToast("ENGLISH");
                 preferenceManager.putString(Constants.KEY_LANGUAGE, "EN");
-                showToast("english");
             }
+            dialog.dismiss();
 
         });
         no_btn.setOnClickListener(view -> dialog.dismiss());
