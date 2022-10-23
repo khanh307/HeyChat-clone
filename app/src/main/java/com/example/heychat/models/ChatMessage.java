@@ -9,6 +9,7 @@ public class ChatMessage {
     public String senderId, receiverId, message, dateTime;
     public Date dataObject;
     public String conversionId, conversionName, conversionImage;
+    public Boolean isSelected = false;
 
     public ChatMessage() {
         type = Constants.MESSAGE_TEXT;

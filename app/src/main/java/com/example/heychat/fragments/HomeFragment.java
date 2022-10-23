@@ -159,7 +159,7 @@ public class HomeFragment extends Fragment implements ConversionListener {
                     } else {
                         chatMessage.conversionImage = documentChange.getDocument().getString(Constants.KEY_RECEIVER_IMAGE);
                         chatMessage.conversionName = documentChange.getDocument().getString(Constants.KEY_RECEIVER_NAME);
-                        chatMessage.conversionId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
+                        chatMessage.conversionId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
                     }
 
                     chatMessage.type = documentChange.getDocument().getString(Constants.KEY_MESSAGE_TYPE);

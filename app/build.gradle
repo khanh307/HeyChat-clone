@@ -56,7 +56,8 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:28.2.1') // add this
     implementation 'com.google.firebase:firebase-messaging:23.0.6'
     implementation 'com.google.firebase:firebase-iid:21.1.0' // add this
-
+    implementation 'com.google.firebase:firebase-storage:20.0.1'
+    
     //MultiDex
     implementation 'androidx.multidex:multidex:2.0.1'
 
@@ -68,6 +69,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth:21.0.6'
     implementation 'com.google.android.gms:play-services-safetynet:18.0.1'
 
+
     //BottomNavigation
     implementation 'com.etebarian:meow-bottom-navigation-java:1.2.0'
 
@@ -77,8 +79,12 @@ dependencies {
     implementation 'de.hdodenhof:circleimageview:3.1.0'
 
     //jitsi meeting
-    implementation ('org.jitsi.react:jitsi-meet-sdk:2.8.2') { transitive = true }
+//    implementation ('org.jitsi.react:jitsi-meet-sdk:2.8.2') { transitive = true }
 
     implementation 'gun0912.ted:tedbottompicker:2.0.1'
+
+    implementation 'com.google.mlkit:translate:17.0.1'
+
+    api files('libs/sinch-android-rtc-3.17.5.aar')
 
 }

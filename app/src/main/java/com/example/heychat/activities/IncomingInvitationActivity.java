@@ -15,7 +15,6 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -25,16 +24,10 @@ import com.example.heychat.R;
 import com.example.heychat.network.ApiClient;
 import com.example.heychat.network.ApiService;
 import com.example.heychat.ultilities.Constants;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.heychat.ultilities.PreferenceManager;
 
-import org.jitsi.meet.sdk.JitsiMeetActivity;
-import org.jitsi.meet.sdk.JitsiMeetConferenceOptions;
-import org.jitsi.meet.sdk.JitsiMeetUserInfo;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
-
-import java.net.URL;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import retrofit2.Call;
@@ -45,6 +38,8 @@ public class IncomingInvitationActivity extends AppCompatActivity {
 
     private MediaPlayer music;
     private String meetingType = null;
+    private PreferenceManager preferenceManager;
+
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -57,7 +52,6 @@ public class IncomingInvitationActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
-        Log.d("BBB", "onCreate");
 
         ImageView imageMeetingType = findViewById(R.id.imageMeetingType);
         meetingType = getIntent().getStringExtra(Constants.REMOTE_MSG_MEETING_TYPE);
@@ -69,16 +63,9 @@ public class IncomingInvitationActivity extends AppCompatActivity {
                 imageMeetingType.setImageResource(R.drawable.ic_call);
             }
         }
-
         CircleImageView textFirstChar = findViewById(R.id.image_user_incoming);
         TextView textUsername = findViewById(R.id.textUsername);
         TextView textEmail = findViewById(R.id.incomingtextEmail);
-
-
-        //Log.d("GGG", getIntent().getStringExtra(Constants.KEY_IMAGE));
-//        textFirstChar.setImageBitmap(
-//                getUserImage(getIntent().getStringExtra(Constants.KEY_IMAGE))
-//        );
 
         textUsername.setText(
                 getIntent().getStringExtra(Constants.KEY_NAME)
@@ -87,8 +74,6 @@ public class IncomingInvitationActivity extends AppCompatActivity {
         textEmail.setText(
                 getIntent().getStringExtra(Constants.KEY_EMAIL)
         );
-
-
 
         ImageView imageAcceptInvitation = findViewById(R.id.imageAcceptInvitaion);
         imageAcceptInvitation.setOnClickListener(v -> sendInvitationResponse(
@@ -138,19 +123,26 @@ public class IncomingInvitationActivity extends AppCompatActivity {
                         if(response.isSuccessful()){
                             if (type.equals(Constants.REMOTE_MSG_INVITATION_ACCEPTED)){
                                 try {
-                                    URL serverURL = new URL("https://meet.jit.si");
-
-                                    JitsiMeetConferenceOptions.Builder builder = new JitsiMeetConferenceOptions.Builder();
-                                    builder.setServerURL(serverURL);
-                                    builder.setWelcomePageEnabled(false);
-                                    builder.setRoom(getIntent().getStringExtra(Constants.REMOTE_MSG_MEETING_ROOM));
-
-                                    if(meetingType.equals("audio")){
-                                        builder.setAudioOnly(true);
-                                    }
-
-                                    JitsiMeetActivity.launch(IncomingInvitationActivity.this, builder.build());
-                                    finish();
+//                                    URL serverURL = new URL("https://meet.jit.si");
+//
+//                                    JitsiMeetConferenceOptions.Builder builder = new JitsiMeetConferenceOptions.Builder();
+//                                    builder.setServerURL(serverURL);
+//                                    builder.setWelcomePageEnabled(false);
+//                                    builder.setRoom(getIntent().getStringExtra(Constants.REMOTE_MSG_MEETING_ROOM));
+//
+//                                    if(meetingType.equals("audio")){
+//                                        builder.setAudioOnly(true);
+//                                    }
+//
+//                                    JitsiMeetActivity.launch(IncomingInvitationActivity.this, builder.build());
+                                    Toast.makeText(IncomingInvitationActivity.this, "Accepted: ", Toast.LENGTH_SHORT).show();
+//                                    Intent intent = new Intent(IncomingInvitationActivity.this, VideoCallActivity.class);
+//                                    intent.putExtra(SinchService.CALL_ID, callId);
+//                                    Bundle bundle = new Bundle();
+//                                    bundle.putSerializable("SinchModel", sinchModel);
+//                                    intent.putExtras(bundle);
+//                                    startActivity(intent);
+                                        finish();
                                 } catch (Exception exception){
                                     Toast.makeText(IncomingInvitationActivity.this, exception.getMessage(), Toast.LENGTH_SHORT).show();
                                     finish();
@@ -178,6 +170,9 @@ public class IncomingInvitationActivity extends AppCompatActivity {
     private BroadcastReceiver invitationResponseReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+
+            preferenceManager = new PreferenceManager(getApplicationContext());
+
             String type = intent.getStringExtra(Constants.REMOTE_MSG_INVITATION_RESPONSE);
             if(type != null){
                 if (type.equals(Constants.REMOTE_MSG_INVITATION_CANCELLED)){
@@ -204,13 +199,11 @@ public class IncomingInvitationActivity extends AppCompatActivity {
         music = MediaPlayer.create(getApplicationContext(), R.raw.notification);
         music.setLooping(true);
         music.start();
-        Log.d("BBB", "onResume");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d("BBB", "onStop");
         music.stop();
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(
                 invitationResponseReceiver

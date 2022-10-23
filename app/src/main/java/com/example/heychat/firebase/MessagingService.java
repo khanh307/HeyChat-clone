@@ -19,6 +19,7 @@ import com.example.heychat.R;
 import com.example.heychat.activities.ChatActivity;
 import com.example.heychat.activities.IncomingInvitationActivity;
 import com.example.heychat.models.User;
+import com.example.heychat.service.SinchService;
 import com.example.heychat.ultilities.Constants;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -38,9 +39,9 @@ public class MessagingService extends FirebaseMessagingService {
         super.onMessageReceived(remoteMessage);
 
         String type = remoteMessage.getData().get(Constants.REMOTE_MSG_TYPE);
-        if(type != null){
+        if (type != null) {
             Log.d("AAA", type.toString());
-            if (type.equals(Constants.REMOTE_MSG_INVITATION)){
+            if (type.equals(Constants.REMOTE_MSG_INVITATION)) {
                 Intent intent = new Intent(getApplicationContext(), IncomingInvitationActivity.class);
                 intent.putExtra(
                         Constants.REMOTE_MSG_MEETING_TYPE,
@@ -76,9 +77,14 @@ public class MessagingService extends FirebaseMessagingService {
                         remoteMessage.getData().get(Constants.REMOTE_MSG_MEETING_ROOM)
                 );
 
+//                intent.putExtra(
+//                  SinchService.CALL_ID,
+//                  remoteMessage.getData().get(SinchService.CALL_ID)
+//                );
+
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 getApplicationContext().startActivity(intent);
-            } else if (type.equals(Constants.REMOTE_MSG_INVITATION_RESPONSE)){
+            } else if (type.equals(Constants.REMOTE_MSG_INVITATION_RESPONSE)) {
                 Intent intent = new Intent(Constants.REMOTE_MSG_INVITATION_RESPONSE);
                 intent.putExtra(
                         Constants.REMOTE_MSG_INVITATION_RESPONSE,
@@ -106,7 +112,7 @@ public class MessagingService extends FirebaseMessagingService {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 pendingIntent = PendingIntent.getBroadcast(this, 1, intent,
                         PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-            }else {
+            } else {
                 pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             }
 
@@ -122,7 +128,7 @@ public class MessagingService extends FirebaseMessagingService {
             builder.setContentIntent(pendingIntent);
 
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 CharSequence channelName = "Chat Message";
                 String channelDescription = "This notification channel is used for chat message notification";
                 int importance = NotificationManager.IMPORTANCE_DEFAULT;

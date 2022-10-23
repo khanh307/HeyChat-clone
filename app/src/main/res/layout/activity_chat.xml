@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
     tools:context=".activities.ChatActivity"
-    android:paddingBottom="@dimen/_15sdp">
+    android:paddingBottom="@dimen/_5sdp">
 
     <RelativeLayout
         android:layout_width="match_parent"

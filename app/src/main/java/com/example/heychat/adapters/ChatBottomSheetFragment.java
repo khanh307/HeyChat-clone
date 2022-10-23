@@ -2,23 +2,36 @@ package com.example.heychat.adapters;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
+import android.webkit.MimeTypeMap;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
@@ -27,6 +40,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.heychat.R;
 import com.example.heychat.activities.OutgoingInvitationActivity;
 import com.example.heychat.listeners.CallListener;
+import com.example.heychat.listeners.MessageListener;
 import com.example.heychat.models.ChatMessage;
 import com.example.heychat.models.User;
 import com.example.heychat.network.ApiClient;
@@ -34,6 +48,9 @@ import com.example.heychat.network.ApiService;
 import com.example.heychat.ultilities.Constants;
 import com.example.heychat.ultilities.PreferenceManager;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.firebase.firestore.DocumentChange;
@@ -42,6 +59,14 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.google.mlkit.nl.translate.TranslateLanguage;
+import com.google.mlkit.nl.translate.Translation;
+import com.google.mlkit.nl.translate.Translator;
+import com.google.mlkit.nl.translate.TranslatorOptions;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
 
@@ -50,6 +75,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -61,16 +87,13 @@ import java.util.Locale;
 import java.util.Objects;
 
 import gun0912.tedbottompicker.TedBottomPicker;
-import gun0912.tedbottompicker.TedBottomSheetDialogFragment;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
+public class ChatBottomSheetFragment extends BottomSheetDialogFragment implements MessageListener {
 
-    private User myUser;
     private AppCompatImageView imageBack;
-    private TextView textName;
     private RecyclerView chatRecyclerView;
     private EditText inputeMessage;
     private View layoutSend, layoutImage, layoutAttact;
@@ -81,7 +104,6 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
     private FirebaseFirestore database;
     private String conversationId = null;
     private Boolean isReceiverAvailable = false;
-    private CallListener callListener;
     private String encodedImage;
 
     public static ChatBottomSheetFragment newInstance(User user) {
@@ -98,7 +120,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
         super.onCreate(savedInstanceState);
 
         Bundle bundleReceive = getArguments();
-        if(bundleReceive != null){
+        if (bundleReceive != null) {
             receiverUser = (User) bundleReceive.get(Constants.KEY_USER);
 //            textName.setText(receiverUser.name);
         }
@@ -111,7 +133,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         BottomSheetDialog bottomSheetDialog = (BottomSheetDialog) new BottomSheetDialog(getContext(), R.style.ChatBottomSheet);
         Window window = bottomSheetDialog.getWindow();
-        if(window == null){
+        if (window == null) {
             return null;
         }
 //        window.setBackgroundDrawableResource(R.color.primary);
@@ -131,22 +153,23 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
         listenAvailabilityOfReceiver();
     }
 
-    private void init(){
+    private void init() {
         preferenceManager = new PreferenceManager(getContext());
         chatMessages = new ArrayList<>();
         chatAdapter = new ChatAdapter(
                 chatMessages,
                 getBitmapFromEncodedString(receiverUser.image),
-                preferenceManager.getString(Constants.KEY_USER_ID)
+                preferenceManager.getString(Constants.KEY_USER_ID),
+                this
         );
         chatRecyclerView.setAdapter(chatAdapter);
         chatRecyclerView.setItemAnimator(null);
         database = FirebaseFirestore.getInstance();
     }
 
-    private void initView(View view){
+    private void initView(View view) {
         imageBack = view.findViewById(R.id.imageBack);
-        textName = view.findViewById(R.id.textName);
+        TextView textName = view.findViewById(R.id.textName);
         chatRecyclerView = view.findViewById(R.id.chatRecyclerView);
         inputeMessage = view.findViewById(R.id.inputeMessage);
         layoutSend = view.findViewById(R.id.layoutSend);
@@ -162,7 +185,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if(inputeMessage.getText().toString().isEmpty()){
+                if (inputeMessage.getText().toString().isEmpty()) {
                     setBtnVisible(false);
                 } else {
                     setBtnVisible(true);
@@ -176,8 +199,8 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
         });
     }
 
-    private void setBtnVisible(boolean visible){
-        if (visible){
+    private void setBtnVisible(boolean visible) {
+        if (visible) {
             layoutImage.setVisibility(View.INVISIBLE);
             layoutAttact.setVisibility(View.INVISIBLE);
             layoutSend.setVisibility(View.VISIBLE);
@@ -188,7 +211,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
         }
     }
 
-    private void sendMessage(){
+    private void sendMessage() {
         HashMap<String, Object> message = new HashMap<>();
         message.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
         message.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
@@ -196,7 +219,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
         message.put(Constants.KEY_TIMESTAMP, new Date());
         message.put(Constants.KEY_MESSAGE_TYPE, Constants.MESSAGE_TEXT);
         database.collection(Constants.KEY_COLLECTION_CHAT).add(message);
-        if(conversationId != null){
+        if (conversationId != null) {
             updateConversion(inputeMessage.getText().toString(), Constants.MESSAGE_TEXT);
         } else {
             HashMap<String, Object> conversion = new HashMap<>();
@@ -211,7 +234,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
             conversion.put(Constants.KEY_TIMESTAMP, new Date());
             addConversion(conversion);
         }
-        if (!isReceiverAvailable){
+        if (!isReceiverAvailable) {
             try {
 
                 JSONArray tokens = new JSONArray();
@@ -229,40 +252,40 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
 
                 sendNotification(body.toString());
 
-            }catch (Exception e){
+            } catch (Exception e) {
                 //showToast(e.getMessage());
             }
         }
         inputeMessage.setText(null);
     }
 
-    private void showToast(String message){
+    private void showToast(String message) {
         Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
     }
 
-    private void sendNotification(String messageBody){
+    private void sendNotification(String messageBody) {
         ApiClient.getClient().create(ApiService.class).sendMessage(
                 Constants.getRemoteMsgHeaders(),
                 messageBody
         ).enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
-                if (response.isSuccessful()){
+                if (response.isSuccessful()) {
                     try {
-                        if(response.body() != null){
+                        if (response.body() != null) {
                             JSONObject responseJson = new JSONObject(response.body());
                             JSONArray results = responseJson.getJSONArray("results");
-                            if(responseJson.getInt("failure") == 1){
+                            if (responseJson.getInt("failure") == 1) {
                                 JSONObject error = (JSONObject) results.get(0);
                                 showToast(error.getString("error"));
                                 return;
                             }
                         }
-                    }catch (JSONException e){
+                    } catch (JSONException e) {
                         e.printStackTrace();
                     }
                     showToast("Notification sent successfully!");
-                } else{
+                } else {
                     showToast("Error: " + response.code());
                 }
             }
@@ -274,22 +297,22 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
         });
     }
 
-    private void listenAvailabilityOfReceiver(){
+    private void listenAvailabilityOfReceiver() {
         database.collection(Constants.KEY_COLLECTION_USER).document(
                 receiverUser.id
         ).addSnapshotListener(this.getActivity(), (value, error) -> {
-            if (error != null){
+            if (error != null) {
                 return;
             }
-            if (value != null){
-                if (value.getLong(Constants.KEY_AVAILABILITY) != null){
+            if (value != null) {
+                if (value.getLong(Constants.KEY_AVAILABILITY) != null) {
                     int availability = Objects.requireNonNull(
                             value.getLong(Constants.KEY_AVAILABILITY)
                     ).intValue();
                     isReceiverAvailable = availability == 1;
                 }
                 receiverUser.token = value.getString(Constants.KEY_FCM_TOKEN);
-                if (receiverUser.image == null){
+                if (receiverUser.image == null) {
                     receiverUser.image = value.getString(Constants.KEY_IMAGE);
                     chatAdapter.setReceiverProfileImage(getBitmapFromEncodedString(receiverUser.image));
                     chatAdapter.notifyItemRangeInserted(0, chatMessages.size());
@@ -299,7 +322,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
         });
     }
 
-    private void listenMessages(){
+    private void listenMessages() {
         database.collection(Constants.KEY_COLLECTION_CHAT)
                 .whereEqualTo(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
                 .whereEqualTo(Constants.KEY_RECEIVER_ID, receiverUser.id)
@@ -311,13 +334,13 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
     }
 
     private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
-        if(error != null){
+        if (error != null) {
             return;
         }
-        if (value != null){
+        if (value != null) {
             int count = chatMessages.size();
-            for (DocumentChange documentChange : value.getDocumentChanges()){
-                if (documentChange.getType() == DocumentChange.Type.ADDED){
+            for (DocumentChange documentChange : value.getDocumentChanges()) {
+                if (documentChange.getType() == DocumentChange.Type.ADDED) {
                     ChatMessage chatMessage = new ChatMessage();
                     chatMessage.type = documentChange.getDocument().getString(Constants.KEY_MESSAGE_TYPE);
                     chatMessage.senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
@@ -330,7 +353,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
             }
 
             Collections.sort(chatMessages, (obj1, obj2) -> obj1.dataObject.compareTo(obj2.dataObject));
-            if (count == 0){
+            if (count == 0) {
                 chatAdapter.notifyDataSetChanged();
             } else {
                 chatAdapter.notifyItemRangeInserted(chatMessages.size(), chatMessages.size());
@@ -338,16 +361,16 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
             }
 
         }
-        if (conversationId == null){
+        if (conversationId == null) {
             checkForConversion();
         }
     };
 
-    private Bitmap getBitmapFromEncodedString(String encodedImage){
-        if (encodedImage != null){
+    private Bitmap getBitmapFromEncodedString(String encodedImage) {
+        if (encodedImage != null) {
             byte[] bytes = Base64.decode(encodedImage, Base64.DEFAULT);
             return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-        } else{
+        } else {
             return null;
         }
     }
@@ -357,17 +380,18 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
 //        textName.setText(receiverUser.name);
 //    }
 
-    private void setListeners(){
+    private void setListeners() {
         imageBack.setOnClickListener(view -> this.dismiss());
         layoutSend.setOnClickListener(v -> sendMessage());
 
-        layoutImage.setOnClickListener(v->requestPermission());
+        layoutImage.setOnClickListener(v -> requestImagePermission());
+        layoutAttact.setOnClickListener(v -> requestFilePermission());
 
-        callListener = new CallListener() {
+        CallListener callListener = new CallListener() {
             @Override
             public void initiateVideoCall(User user) {
-                if(user.token == null || user.token.trim().isEmpty()){
-                    Toast.makeText(getContext(), user.name +"is not available for video call", Toast.LENGTH_SHORT).show();
+                if (user.token == null || user.token.trim().isEmpty()) {
+                    Toast.makeText(getContext(), user.name + "is not available for video call", Toast.LENGTH_SHORT).show();
                 } else {
                     Intent intent = new Intent(getContext(), OutgoingInvitationActivity.class);
                     intent.putExtra("user", user);
@@ -378,8 +402,8 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
 
             @Override
             public void initiateAudioCall(User user) {
-                if(user.token == null || user.token.trim().isEmpty()){
-                    Toast.makeText(getContext(), user.name +"is not available for audio call", Toast.LENGTH_SHORT).show();
+                if (user.token == null || user.token.trim().isEmpty()) {
+                    Toast.makeText(getContext(), user.name + "is not available for audio call", Toast.LENGTH_SHORT).show();
                 } else {
                     Intent intent = new Intent(getContext(), OutgoingInvitationActivity.class);
                     intent.putExtra("user", user);
@@ -390,7 +414,153 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
         };
     }
 
-    private void requestPermission(){
+    private void requestFilePermission() {
+        PermissionListener permissionlistener = new PermissionListener() {
+            @Override
+            public void onPermissionGranted() {
+                openFileChoser();
+            }
+
+            @Override
+            public void onPermissionDenied(List<String> deniedPermissions) {
+                Toast.makeText(getContext(), "Permission Denied\n" + deniedPermissions.toString(), Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        TedPermission.create()
+                .setPermissionListener(permissionlistener)
+                .setDeniedMessage("If you reject permission,you can not use this service\n\nPlease turn on permissions at [Setting] > [Permission]")
+                .setPermissions(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .check();
+
+    }
+
+    private void openFileChoser() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent = Intent.createChooser(intent, "Chose a file");
+        pickFileActivity.launch(intent);
+    }
+
+    ActivityResultLauncher<Intent> pickFileActivity = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+        @Override
+        public void onActivityResult(ActivityResult result) {
+            if (result.getResultCode() == Activity.RESULT_OK) {
+                Intent data = result.getData();
+                Uri uri = data.getData();
+
+//                inputeMessage.setText(uri.toString());
+
+//                File file = new File(uri.toString());
+                String path = new File(uri.toString()).getAbsolutePath();
+
+                if(path != null){
+                    String filename;
+                    Cursor cursor = getContext().getContentResolver().query(uri,null,null,null,null);
+
+                    if(cursor == null) filename=uri.getPath();
+                    else{
+                        cursor.moveToFirst();
+                        int idx = cursor.getColumnIndex(MediaStore.Files.FileColumns.DISPLAY_NAME);
+                        filename = cursor.getString(idx);
+                        cursor.close();
+                    }
+
+                    String name = filename.substring(0,filename.lastIndexOf("."));
+                    String extension = filename.substring(filename.lastIndexOf(".")+1);
+
+
+                    uploadFile(uri, name, extension);
+                }
+
+
+            }
+        }
+    });
+
+
+    private void uploadFile(Uri uri, String fileName, String fileExtension) {
+        final ProgressDialog progressDialog = new ProgressDialog(getContext());
+        progressDialog.setTitle("Uploading...");
+        progressDialog.show();
+
+        StorageReference reference = FirebaseStorage.getInstance().getReference().child(preferenceManager.getString(Constants.KEY_USER_ID))
+                .child(fileName + "--__" + System.currentTimeMillis()+"."+fileExtension);
+        reference.putFile(uri)
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
+                        while (!uriTask.isComplete()) ;
+                        progressDialog.dismiss();
+                        taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                sendFile(uri.toString());
+                            }
+                        });
+                    }
+                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+                        double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
+                        progressDialog.setMessage("Uploaded: " + (int) progress + "%");
+                    }
+                });
+
+    }
+
+    private void sendFile(String download) {
+        HashMap<String, Object> message = new HashMap<>();
+        message.put(Constants.KEY_MESSAGE_TYPE, Constants.MESSAGE_FILE);
+        message.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+        message.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
+        message.put(Constants.KEY_MESSAGE, download);
+        message.put(Constants.KEY_TIMESTAMP, new Date());
+        database.collection(Constants.KEY_COLLECTION_CHAT).add(message);
+        if (conversationId != null) {
+            updateConversion(Constants.MESSAGE_FILE, Constants.MESSAGE_FILE);
+        } else {
+            HashMap<String, Object> conversion = new HashMap<>();
+            conversion.put(Constants.KEY_MESSAGE_TYPE, Constants.MESSAGE_FILE);
+            conversion.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+            conversion.put(Constants.KEY_SENDER_NAME, preferenceManager.getString(Constants.KEY_NAME));
+            conversion.put(Constants.KEY_SENDER_IMAGE, preferenceManager.getString(Constants.KEY_IMAGE));
+            conversion.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
+            conversion.put(Constants.KEY_RECEIVER_NAME, receiverUser.name);
+            conversion.put(Constants.KEY_RECEIVER_IMAGE, receiverUser.image);
+            conversion.put(Constants.KEY_LAST_MESSAGE, Constants.MESSAGE_FILE);
+            conversion.put(Constants.KEY_TIMESTAMP, new Date());
+            addConversion(conversion);
+        }
+        if (!isReceiverAvailable) {
+            try {
+
+                JSONArray tokens = new JSONArray();
+                tokens.put(receiverUser.token);
+
+                JSONObject data = new JSONObject();
+
+                data.put(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+                data.put(Constants.KEY_NAME, preferenceManager.getString(Constants.KEY_NAME));
+                data.put(Constants.KEY_FCM_TOKEN, preferenceManager.getString(Constants.KEY_FCM_TOKEN));
+                data.put(Constants.KEY_MESSAGE, Constants.MESSAGE_FILE);
+
+                JSONObject body = new JSONObject();
+                body.put(Constants.REMOTE_MSG_DATA, data);
+                body.put(Constants.REMOTE_MSG_REGISTRATION_IDS, tokens);
+
+                sendNotification(body.toString());
+
+            } catch (Exception e) {
+                //showToast(e.getMessage());
+            }
+        }
+        inputeMessage.setText(null);
+    }
+
+
+    private void requestImagePermission() {
         PermissionListener permissionlistener = new PermissionListener() {
             @Override
             public void onPermissionGranted() {
@@ -413,16 +583,13 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
     private void openImagePicker() {
 
         TedBottomPicker.with(this.getActivity())
-                .show(new TedBottomSheetDialogFragment.OnImageSelectedListener() {
-                    @Override
-                    public void onImageSelected(Uri uri) {
-                        try {
-                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri);
-                            encodedImage = encodeImage(bitmap);
-                            sendImage();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                .show(uri -> {
+                    try {
+                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri);
+                        encodedImage = encodeImage(bitmap);
+                        sendImage();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 });
 
@@ -436,7 +603,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
         message.put(Constants.KEY_MESSAGE, encodedImage);
         message.put(Constants.KEY_TIMESTAMP, new Date());
         database.collection(Constants.KEY_COLLECTION_CHAT).add(message);
-        if(conversationId != null){
+        if (conversationId != null) {
             updateConversion(Constants.MESSAGE_IMAGE, Constants.MESSAGE_IMAGE);
         } else {
             HashMap<String, Object> conversion = new HashMap<>();
@@ -451,7 +618,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
             conversion.put(Constants.KEY_TIMESTAMP, new Date());
             addConversion(conversion);
         }
-        if (!isReceiverAvailable){
+        if (!isReceiverAvailable) {
             try {
 
                 JSONArray tokens = new JSONArray();
@@ -470,15 +637,15 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
 
                 sendNotification(body.toString());
 
-            }catch (Exception e){
+            } catch (Exception e) {
                 //showToast(e.getMessage());
             }
         }
         inputeMessage.setText(null);
     }
 
-    private String encodeImage(Bitmap bitmap){
-        int previewWidth = bitmap.getWidth()/2;
+    private String encodeImage(Bitmap bitmap) {
+        int previewWidth = bitmap.getWidth() / 2;
         int previewHeight = bitmap.getHeight() * previewWidth / bitmap.getWidth();
         Bitmap previewBitmap = Bitmap.createScaledBitmap(bitmap, previewWidth, previewHeight, false);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -487,13 +654,13 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
         return Base64.encodeToString(bytes, Base64.DEFAULT);
     }
 
-    private void addConversion(HashMap<String, Object> conversion){
+    private void addConversion(HashMap<String, Object> conversion) {
         database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
                 .add(conversion)
                 .addOnSuccessListener(documentReference -> conversationId = documentReference.getId());
     }
 
-    private void updateConversion(String message, String type){
+    private void updateConversion(String message, String type) {
         DocumentReference documentReference =
                 database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(conversationId);
         documentReference.update(
@@ -503,8 +670,8 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
         );
     }
 
-    private void checkForConversion(){
-        if(chatMessages.size() > 0){
+    private void checkForConversion() {
+        if (chatMessages.size() > 0) {
             checkForConversionRemotely(
                     preferenceManager.getString(Constants.KEY_USER_ID),
                     receiverUser.id
@@ -516,11 +683,11 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
         }
     }
 
-    private String getReadableDateTime(Date date){
+    private String getReadableDateTime(Date date) {
         return new SimpleDateFormat("dd MMMM, yyyy - hh:mm a", Locale.getDefault()).format(date);
     }
 
-    private void checkForConversionRemotely(String senderId, String receiverId){
+    private void checkForConversionRemotely(String senderId, String receiverId) {
         database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
                 .whereEqualTo(Constants.KEY_SENDER_ID, senderId)
                 .whereEqualTo(Constants.KEY_RECEIVER_ID, receiverId)
@@ -529,16 +696,61 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment {
     }
 
     private final OnCompleteListener<QuerySnapshot> conversionOnCompleteListener = task -> {
-        if (task.isSuccessful() && task.getResult() != null && task.getResult().getDocuments().size() > 0){
+        if (task.isSuccessful() && task.getResult() != null && task.getResult().getDocuments().size() > 0) {
             DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
             conversationId = documentSnapshot.getId();
         }
     };
 
+    @Override
+    public void onMessageSelection(Boolean isSelected) {
 
-    //    @Override
-//    public void onResume() {
-//        super.onResume();
-//        listenAvailabilityOfReceiver();
-//    }
+    }
+
+    @Override
+    public void onGetMessage(ChatMessage chatMessage) {
+
+        TranslatorOptions options;
+        if (preferenceManager.getString(Constants.KEY_LANGUAGE) == "VI") {
+            options = new TranslatorOptions.Builder()
+                    .setSourceLanguage(TranslateLanguage.ENGLISH)
+                    .setTargetLanguage(TranslateLanguage.VIETNAMESE)
+                    .build();
+        } else {
+            options = new TranslatorOptions.Builder()
+                    .setSourceLanguage(TranslateLanguage.VIETNAMESE)
+                    .setTargetLanguage(TranslateLanguage.ENGLISH)
+                    .build();
+        }
+
+        Translator englishVITranslator = Translation.getClient(options);
+
+        getLifecycle().addObserver(englishVITranslator);
+
+        englishVITranslator.downloadModelIfNeeded().addOnSuccessListener(unused -> {
+            englishVITranslator.translate(chatMessage.message)
+                    .addOnSuccessListener(new OnSuccessListener<String>() {
+                        @Override
+                        public void onSuccess(String s) {
+                            chatMessage.message = s;
+                            chatAdapter.notifyDataSetChanged();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            showToast(e.getMessage());
+                        }
+                    });
+
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                showToast(e.getMessage());
+            }
+        });
+
+    }
+
+
 }

@@ -13,7 +13,6 @@ import com.example.heychat.databinding.ActivitySearchBinding;
 import com.example.heychat.listeners.UserListener;
 import com.example.heychat.models.User;
 import com.example.heychat.ultilities.Constants;
-import com.facebook.react.views.textinput.ReactTextChangedEvent;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 

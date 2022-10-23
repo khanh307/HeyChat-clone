@@ -26,15 +26,26 @@
             android:id="@+id/textMessage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@id/downBtn"
+            android:visibility="gone"
             android:textColor="@color/white"
-            android:textSize="@dimen/_13ssp"
-            android:visibility="gone"/>
+            android:textSize="@dimen/_13ssp" />
 
         <ImageView
             android:visibility="gone"
             android:id="@+id/imageMessage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
+
+        <ImageView
+            android:visibility="gone"
+            android:layout_centerVertical="true"
+            android:id="@+id/downBtn"
+            android:layout_width="@dimen/_24sdp"
+            android:layout_height="@dimen/_24sdp"
+            android:src="@drawable/ic_down"/>
+
     </RelativeLayout>
 
     <TextView

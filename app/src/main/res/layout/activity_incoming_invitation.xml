@@ -77,7 +77,7 @@
     </LinearLayout>
     
     <ImageView
-        android:id="@+id/imageAcceptInvitaion"
+        android:id="@+id/imageRejectInvitaion"
         android:layout_width="@dimen/_50sdp"
         android:layout_height="@dimen/_50sdp"
         android:layout_marginStart="@dimen/_60sdp"
@@ -91,7 +91,7 @@
         app:tint="@color/white"/>
 
     <ImageView
-        android:id="@+id/imageRejectInvitaion"
+        android:id="@+id/imageAcceptInvitaion"
         android:layout_width="@dimen/_50sdp"
         android:layout_height="@dimen/_50sdp"
         android:layout_marginEnd="@dimen/_60sdp"

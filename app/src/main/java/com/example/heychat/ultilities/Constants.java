@@ -35,6 +35,7 @@ public class Constants {
     public static final String MESSAGE_TEXT = "text";
     public static final String MESSAGE_IMAGE = "image";
     public static final String MESSAGE_FILE = "file";
+    public static final String KEY_FILE = "download_file";
 
     public static final String REMOTE_MSG_TYPE = "type";
     public static final String REMOTE_MSG_INVITATION = "invitation";
@@ -56,6 +57,8 @@ public class Constants {
     public static final String KEY_GROUP = "group";
     public static final String KEY_COLLECTION_CHAT_GROUPS = "chatGroups";
     public static final String KEY_COLLECTION_CONVERSATIONS_GROUP = "conversationGroups";
+
+    public static final String KEY_LANGUAGE = "language";
 
 
     public static HashMap<String, String> remoteMsgHeaders = null;

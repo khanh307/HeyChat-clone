@@ -67,15 +67,15 @@ public class RecentConversationAdapter extends RecyclerView.Adapter<RecentConver
         }
 
         void setData(ChatMessage chatMessage) {
-            if (chatMessage.type.equals(Constants.MESSAGE_IMAGE)){
+            if (chatMessage.type != null && chatMessage.type.equals(Constants.MESSAGE_IMAGE)){
                 binding.imageview.setVisibility(View.VISIBLE);
-            } else  if (chatMessage.type.equals(Constants.MESSAGE_TEXT)){
+            } else  if (chatMessage.type != null && chatMessage.type.equals(Constants.MESSAGE_TEXT)){
                 binding.imageview.setVisibility(View.GONE);
             }
             binding.imageProfile.setImageBitmap(getConversionImage(chatMessage.conversionImage));
             binding.textName.setText(chatMessage.conversionName);
             binding.textRecentMessage.setText(chatMessage.message);
-            Log.d("OOOO", "++"+chatMessage.type);
+
 
             binding.getRoot().setOnClickListener(view -> {
                 FirebaseFirestore database = FirebaseFirestore.getInstance();

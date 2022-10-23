@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +34,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
+import com.sinch.android.rtc.calling.Call;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -173,6 +175,7 @@ public class VideoCallFragment extends Fragment implements CallListener{
 
     @Override
     public void initiateAudioCall(User user) {
+
         if(user.token == null || user.token.trim().isEmpty()){
             Toast.makeText(getContext(), user.name +"is not available for audio call", Toast.LENGTH_SHORT).show();
         } else {
@@ -180,6 +183,8 @@ public class VideoCallFragment extends Fragment implements CallListener{
             intent.putExtra("user", user);
             intent.putExtra("type", "audio");
             startActivity(intent);
+
+
         }
     }
 }

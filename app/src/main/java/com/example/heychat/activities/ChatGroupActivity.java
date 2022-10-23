@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 
 import com.example.heychat.adapters.ChatGroupAdapter;
 import com.example.heychat.databinding.ActivityChatGroupBinding;
+import com.example.heychat.listeners.MessageListener;
 import com.example.heychat.models.ChatMessage;
 import com.example.heychat.models.Group;
 import com.example.heychat.network.ApiClient;
@@ -109,7 +110,18 @@ public class ChatGroupActivity extends BaseActivity {
         chatAdapter = new ChatGroupAdapter(
                 chatMessages,
                 getBitmapFromEncodedString(receiverUser.image),
-                preferenceManager.getString(Constants.KEY_USER_ID)
+                preferenceManager.getString(Constants.KEY_USER_ID),
+                new MessageListener() {
+                    @Override
+                    public void onMessageSelection(Boolean isSelected) {
+
+                    }
+
+                    @Override
+                    public void onGetMessage(ChatMessage chatMessage) {
+
+                    }
+                }
         );
         binding.chatRecyclerView.setAdapter(chatAdapter);
         binding.chatRecyclerView.setItemAnimator(null);

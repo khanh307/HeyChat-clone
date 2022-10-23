@@ -27,6 +27,6 @@
         <item name="behavior_fitToContents">true</item>
         <item name="behavior_peekHeight">1000dp</item>
         <item name="behavior_hideable">true</item>
-        <item name="android:layout_marginTop">@dimen/_15sdp</item>
+
     </style>
 </resources>

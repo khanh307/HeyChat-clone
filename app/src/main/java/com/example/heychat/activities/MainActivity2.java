@@ -1,15 +1,28 @@
 package com.example.heychat.activities;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
+import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 
@@ -26,6 +39,7 @@ import com.example.heychat.firebase.ViewPagerAdapter;
 import com.example.heychat.listeners.UserListener;
 
 import com.example.heychat.models.User;
+import com.example.heychat.service.SinchService;
 import com.example.heychat.ultilities.Constants;
 import com.example.heychat.ultilities.PreferenceManager;
 
@@ -36,13 +50,17 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
+import com.sinch.android.rtc.SinchError;
 
 import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity2 extends AppCompatActivity implements UserListener {
+public class MainActivity2 extends AppCompatActivity implements UserListener{
 
     private ActivityMain2Binding binding;
     private CollapsingToolbarLayout collapsingToolbarLayout;
@@ -50,6 +68,7 @@ public class MainActivity2 extends AppCompatActivity implements UserListener {
     private UserOnlineAdapter userOnlineAdapter;
     private ArrayList<User> users;
     private PreferenceManager preferenceManager;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,11 +90,12 @@ public class MainActivity2 extends AppCompatActivity implements UserListener {
         binding.searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Intent intent = new Intent(getApplicationContext(), SearchActivity.class);
+                Intent intent = new Intent(getApplicationContext(), SearchActivity.class);
+                startActivity(intent);
+
+//                Intent intent = new Intent(getApplicationContext(), GroupActivity.class);
 //                startActivity(intent);
 
-                Intent intent = new Intent(getApplicationContext(), GroupActivity.class);
-                startActivity(intent);
             }
         });
 
@@ -86,6 +106,7 @@ public class MainActivity2 extends AppCompatActivity implements UserListener {
                 startActivity(intent);
             }
         });
+
 
     }
 
@@ -210,5 +231,10 @@ public class MainActivity2 extends AppCompatActivity implements UserListener {
         ChatBottomSheetFragment bottomSheetDialog = ChatBottomSheetFragment.newInstance(user);
         bottomSheetDialog.show(this.getSupportFragmentManager(), bottomSheetDialog.getTag());
     }
+
+
+
+
+
 
 }
