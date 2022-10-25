@@ -13,20 +13,29 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+<<<<<<< HEAD
 import android.widget.Toast;
+=======
+import android.widget.TextView;
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.heychat.R;
 import com.example.heychat.databinding.ItemContainerReceivedMessageBinding;
 import com.example.heychat.databinding.ItemContainerSentMessageBinding;
 import com.example.heychat.listeners.MessageListener;
 import com.example.heychat.models.ChatMessage;
 import com.example.heychat.ultilities.Constants;
+<<<<<<< HEAD
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+=======
+import com.google.android.gms.dynamic.IFragmentWrapper;
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -35,10 +44,17 @@ import java.util.List;
 
 public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
+<<<<<<< HEAD
     public  List<ChatMessage> chatMessages;
     private Bitmap receiverProfileImage;
     private final String senderId;
     public  MessageListener messageListener;
+=======
+    public List<ChatMessage> chatMessages;
+    private Bitmap receiverProfileImage;
+    private final String senderId;
+    public MessageListener messageListener;
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
 
     private static final int VIEW_TYPE_SENT = 1;
     private static final int VIEW_TYPE_RECEIVED = 2;
@@ -96,6 +112,26 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         } else if (getItemViewType(position) == VIEW_TYPE_RECEIVED_FILE) {
             ((ReceivedMessageViewHolder) holder).setFileData(chatMessages.get(position), receiverProfileImage);
         }
+
+//        if (chatMessages.get(0).model.equals("receiver")) {
+//            for (int i = 0; i < chatMessages.size() - 1; i++) {
+//                if (chatMessages.get(i).model.equals("receiver")) {
+//                    if (chatMessages.get(i + 1).model.equals("sender")) {
+//                        chatMessages.get(i).lastReceiver = true;
+//                    }
+//                }
+//            }
+//        } else {
+//            for (int i = chatMessages.size() - 2; i >= 0; i--){
+//                if (chatMessages.get(i).model.equals("receiver")) {
+//                    if (chatMessages.get(i + 1).model.equals("sender")) {
+//                        chatMessages.get(i).lastReceiver = true;
+//                    }
+//                }
+//            }
+//        }
+
+
     }
 
     @Override
@@ -123,23 +159,62 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 }
             }
         }
+
+            if (chatMessages.get(position).model.equals("receiver")) {
+                if (position != 0) {
+                    if (chatMessages.get(position - 1).model.equals("sender")) {
+                        chatMessages.get(position).lastReceiver = true;
+                    }
+                }
+            }
+
+            if (chatMessages.get(0).model.equals("receiver"))
+                chatMessages.get(0).lastReceiver = true;
+
+
         return VIEW_TYPE_RECEIVED;
     }
 
-    static class SentMessageViewHolder extends RecyclerView.ViewHolder {
+    class SentMessageViewHolder extends RecyclerView.ViewHolder {
 
         private final ItemContainerSentMessageBinding binding;
 
         SentMessageViewHolder(ItemContainerSentMessageBinding itemContainerSentMessageBinding) {
             super(itemContainerSentMessageBinding.getRoot());
             binding = itemContainerSentMessageBinding;
+
+            itemView.setOnClickListener(view -> {
+                if (messageListener != null) {
+                    int pos = getAdapterPosition();
+                    chatMessages.get(pos).isSelected = !chatMessages.get(pos).isSelected;
+                    if (!chatMessages.get(pos).isSelected) {
+                        binding.txtDelete.setVisibility(View.GONE);
+                        binding.textDateTime.setVisibility(View.GONE);
+                        if (!chatMessages.get(pos).lastReceiver)
+                            binding.textDateTime.setVisibility(View.GONE);
+                    } else {
+                        binding.txtDelete.setVisibility(View.VISIBLE);
+                        binding.textDateTime.setVisibility(View.VISIBLE);
+                        if (!chatMessages.get(pos).lastReceiver)
+                            binding.textDateTime.setVisibility(View.VISIBLE);
+                    }
+                    messageListener.onMessageSelection(chatMessages.get(pos).isSelected);
+                }
+            });
+
+            binding.txtDelete.setOnClickListener(view -> {
+                if (messageListener != null) {
+                    int pos = getAdapterPosition();
+                    messageListener.onDeleteMessage(chatMessages.get(pos), pos, chatMessages);
+                }
+            });
+
         }
 
         void setTextData(ChatMessage chatMessage) {
             binding.textMessage.setText(chatMessage.message);
             binding.textMessage.setVisibility(ViewGroup.VISIBLE);
             binding.textDateTime.setText(chatMessage.dateTime);
-
         }
 
         void setImageData(ChatMessage chatMessage) {
@@ -149,6 +224,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             binding.textDateTime.setText(chatMessage.dateTime);
         }
 
+<<<<<<< HEAD
         void setFileData(ChatMessage chatMessage){
             try {
 //                URL fileUrl = new URL(chatMessage.message);
@@ -174,6 +250,9 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
 
         private static Bitmap getUserImage(String encodedImage) {
+=======
+        private Bitmap getUserImage(String encodedImage) {
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
             byte[] bytes = Base64.decode(encodedImage, Base64.DEFAULT);
             return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
         }
@@ -206,19 +285,47 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             super(itemContainerReceivedMessageBinding.getRoot());
             binding = itemContainerReceivedMessageBinding;
             itemView.setOnClickListener(view -> {
+<<<<<<< HEAD
                 if (messageListener != null){
                     int pos = getAdapterPosition();
                     chatMessages.get(pos).isSelected = !chatMessages.get(pos).isSelected;
                     if (!chatMessages.get(pos).isSelected)
                         binding.txtTranslate.setVisibility(View.GONE);
                     else binding.txtTranslate.setVisibility(View.VISIBLE);
+=======
+                if (messageListener != null) {
+                    int pos = getAdapterPosition();
+                    chatMessages.get(pos).isSelected = !chatMessages.get(pos).isSelected;
+                    if (!chatMessages.get(pos).isSelected) {
+                        binding.txtTranslate.setVisibility(View.GONE);
+                        binding.txtDelete.setVisibility(View.GONE);
+                        binding.textDateTime.setVisibility(View.GONE);
+                    } else {
+                        binding.txtTranslate.setVisibility(View.VISIBLE);
+                        binding.txtDelete.setVisibility(View.VISIBLE);
+                        binding.textDateTime.setVisibility(View.VISIBLE);
+                    }
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
                     messageListener.onMessageSelection(chatMessages.get(pos).isSelected);
                 }
             });
             binding.txtTranslate.setOnClickListener(view -> {
+<<<<<<< HEAD
                 if (messageListener != null){
                     int pos = getAdapterPosition();
                     messageListener.onGetMessage(chatMessages.get(pos));
+=======
+                if (messageListener != null) {
+                    int pos = getAdapterPosition();
+                    messageListener.onTranslateMessage(chatMessages.get(pos), pos);
+                }
+            });
+
+            binding.txtDelete.setOnClickListener(view -> {
+                if (messageListener != null) {
+                    int pos = getAdapterPosition();
+                    messageListener.onDeleteMessage(chatMessages.get(pos), pos, chatMessages);
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
                 }
             });
         }
@@ -231,6 +338,14 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             if (receiverProfileImage != null) {
                 binding.imageProfile.setImageBitmap(receiverProfileImage);
             }
+<<<<<<< HEAD
+=======
+            if (chatMessage.lastReceiver) {
+                binding.imageProfile.setVisibility(View.VISIBLE);
+            } else {
+                binding.imageProfile.setVisibility(View.GONE);
+            }
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
 
         }
 
@@ -245,6 +360,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
         }
 
+<<<<<<< HEAD
         void setFileData(ChatMessage chatMessage, Bitmap receiverProfileImage){
             try {
 //                URL fileUrl = new URL(chatMessage.message);
@@ -272,6 +388,8 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
         }
 
+=======
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
         private Bitmap getUserImage(String encodedImage) {
             byte[] bytes = Base64.decode(encodedImage, Base64.DEFAULT);
             return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);

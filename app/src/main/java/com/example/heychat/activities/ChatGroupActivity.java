@@ -47,7 +47,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ChatGroupActivity extends BaseActivity {
+public class ChatGroupActivity extends BaseActivity implements MessageListener {
 
     private ActivityChatGroupBinding binding;
     private Group receiverUser;
@@ -110,6 +110,7 @@ public class ChatGroupActivity extends BaseActivity {
         chatAdapter = new ChatGroupAdapter(
                 chatMessages,
                 getBitmapFromEncodedString(receiverUser.image),
+<<<<<<< HEAD
                 preferenceManager.getString(Constants.KEY_USER_ID),
                 new MessageListener() {
                     @Override
@@ -122,6 +123,9 @@ public class ChatGroupActivity extends BaseActivity {
 
                     }
                 }
+=======
+                preferenceManager.getString(Constants.KEY_USER_ID), this
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
         );
         binding.chatRecyclerView.setAdapter(chatAdapter);
         binding.chatRecyclerView.setItemAnimator(null);
@@ -339,6 +343,17 @@ public class ChatGroupActivity extends BaseActivity {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         });
+
+        binding.textName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), InfoGroupActivity.class);
+                intent.putExtra(Constants.KEY_GROUP, receiverUser);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            }
+        });
+
         binding.layoutSend.setOnClickListener(v -> sendMessage());
 
 //        CallListener callListener = new CallListener() {
@@ -420,4 +435,18 @@ public class ChatGroupActivity extends BaseActivity {
         listenAvailabilityOfReceiver();
     }
 
+    @Override
+    public void onMessageSelection(Boolean isSelected) {
+
+    }
+
+    @Override
+    public void onTranslateMessage(ChatMessage chatMessage, int pos) {
+
+    }
+
+    @Override
+    public void onDeleteMessage(ChatMessage chatMessage, int pos, List<ChatMessage> chatMessages) {
+
+    }
 }

@@ -10,22 +10,24 @@ import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.heychat.databinding.ItemContainerReceivedMessageGroupBinding;
 import com.example.heychat.databinding.ItemContainerSentMessageBinding;
 import com.example.heychat.listeners.MessageListener;
 import com.example.heychat.models.ChatMessage;
 import com.example.heychat.ultilities.Constants;
 import com.google.firebase.firestore.FirebaseFirestore;
+<<<<<<< HEAD
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
+=======
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
 import java.util.List;
+
 
 public class ChatGroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -45,7 +47,11 @@ public class ChatGroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         receiverProfileImage = bitmap;
     }
 
+<<<<<<< HEAD
     public ChatGroupAdapter(List<ChatMessage> chatMessages, Bitmap receiverProfileImage, String senderId , MessageListener messageListener) {
+=======
+    public ChatGroupAdapter(List<ChatMessage> chatMessages, Bitmap receiverProfileImage, String senderId, MessageListener messageListener) {
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
         this.chatMessages = chatMessages;
         this.receiverProfileImage = receiverProfileImage;
         this.senderId = senderId;
@@ -89,6 +95,7 @@ public class ChatGroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         } else if (getItemViewType(position) == VIEW_TYPE_RECEIVED_FILE) {
             ((ReceivedMessageViewHolder) holder).setFileData(chatMessages.get(position));
         }
+
     }
 
     @Override
@@ -116,16 +123,53 @@ public class ChatGroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 }
             }
         }
+
+        if (chatMessages.get(position).model.equals("receiver")) {
+            if (position != 0) {
+                if (chatMessages.get(position - 1).model.equals("sender")) {
+                    chatMessages.get(position).lastReceiver = true;
+                }
+            }
+        }
+
+        if (chatMessages.get(0).model.equals("receiver"))
+            chatMessages.get(0).lastReceiver = true;
+
         return VIEW_TYPE_RECEIVED;
     }
 
-    static class SentMessageViewHolder extends RecyclerView.ViewHolder {
+    class SentMessageViewHolder extends RecyclerView.ViewHolder {
 
         private final ItemContainerSentMessageBinding binding;
 
         SentMessageViewHolder(ItemContainerSentMessageBinding itemContainerSentMessageBinding) {
             super(itemContainerSentMessageBinding.getRoot());
             binding = itemContainerSentMessageBinding;
+            itemView.setOnClickListener(view -> {
+                if (messageListener != null) {
+                    int pos = getAdapterPosition();
+                    chatMessages.get(pos).isSelected = !chatMessages.get(pos).isSelected;
+                    if (!chatMessages.get(pos).isSelected) {
+                        binding.txtDelete.setVisibility(View.GONE);
+                        binding.textDateTime.setVisibility(View.GONE);
+                        if (!chatMessages.get(pos).lastReceiver)
+                            binding.textDateTime.setVisibility(View.GONE);
+                    } else {
+                        binding.txtDelete.setVisibility(View.VISIBLE);
+                        binding.textDateTime.setVisibility(View.VISIBLE);
+                        if (!chatMessages.get(pos).lastReceiver)
+                            binding.textDateTime.setVisibility(View.VISIBLE);
+                    }
+                    messageListener.onMessageSelection(chatMessages.get(pos).isSelected);
+                }
+            });
+
+            binding.txtDelete.setOnClickListener(view -> {
+                if (messageListener != null) {
+                    int pos = getAdapterPosition();
+                    messageListener.onDeleteMessage(chatMessages.get(pos), pos, chatMessages);
+                }
+            });
         }
 
         void setTextData(ChatMessage chatMessage) {
@@ -142,6 +186,7 @@ public class ChatGroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             binding.textDateTime.setText(chatMessage.dateTime);
         }
 
+<<<<<<< HEAD
         void setFileData(ChatMessage chatMessage){
             try {
 //                URL fileUrl = new URL(chatMessage.message);
@@ -185,6 +230,9 @@ public class ChatGroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         }
 
         private static Bitmap getUserImage(String encodedImage) {
+=======
+        private Bitmap getUserImage(String encodedImage) {
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
             byte[] bytes = Base64.decode(encodedImage, Base64.DEFAULT);
             return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
         }
@@ -198,19 +246,47 @@ public class ChatGroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             super(ItemContainerReceivedMessageGroupBinding.getRoot());
             binding = ItemContainerReceivedMessageGroupBinding;
             itemView.setOnClickListener(view -> {
+<<<<<<< HEAD
                 if (messageListener != null){
                     int pos = getAdapterPosition();
                     chatMessages.get(pos).isSelected = !chatMessages.get(pos).isSelected;
                     if (!chatMessages.get(pos).isSelected)
                         binding.txtTranslate.setVisibility(View.GONE);
                     else binding.txtTranslate.setVisibility(View.VISIBLE);
+=======
+                if (messageListener != null) {
+                    int pos = getAdapterPosition();
+                    chatMessages.get(pos).isSelected = !chatMessages.get(pos).isSelected;
+                    if (!chatMessages.get(pos).isSelected) {
+                        binding.txtTranslate.setVisibility(View.GONE);
+                        binding.txtDelete.setVisibility(View.GONE);
+                        binding.textDateTime.setVisibility(View.GONE);
+                    } else {
+                        binding.txtTranslate.setVisibility(View.VISIBLE);
+                        binding.txtDelete.setVisibility(View.VISIBLE);
+                        binding.textDateTime.setVisibility(View.VISIBLE);
+                    }
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
                     messageListener.onMessageSelection(chatMessages.get(pos).isSelected);
                 }
             });
             binding.txtTranslate.setOnClickListener(view -> {
+<<<<<<< HEAD
                 if (messageListener != null){
                     int pos = getAdapterPosition();
                     messageListener.onGetMessage(chatMessages.get(pos));
+=======
+                if (messageListener != null) {
+                    int pos = getAdapterPosition();
+                    messageListener.onTranslateMessage(chatMessages.get(pos), pos);
+                }
+            });
+
+            binding.txtDelete.setOnClickListener(view -> {
+                if (messageListener != null) {
+                    int pos = getAdapterPosition();
+                    messageListener.onDeleteMessage(chatMessages.get(pos), pos, chatMessages);
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
                 }
             });
         }
@@ -226,6 +302,17 @@ public class ChatGroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                         binding.imageProfile.setImageBitmap(getBitmapFromEncodedString(documentSnapshot.getString(Constants.KEY_IMAGE)));
                         binding.textName.setText(documentSnapshot.getString(Constants.KEY_NAME));
                     });
+
+            if (chatMessage.lastReceiver) {
+                binding.imageProfile.setVisibility(View.VISIBLE);
+                binding.textName.setVisibility(View.VISIBLE);
+               // binding.viewSupporter2.setVisibility(View.VISIBLE);
+            } else {
+                binding.imageProfile.setVisibility(View.GONE);
+                binding.textName.setVisibility(View.GONE);
+               // binding.viewSupporter2.setVisibility(View.GONE);
+            }
+
 
         }
 

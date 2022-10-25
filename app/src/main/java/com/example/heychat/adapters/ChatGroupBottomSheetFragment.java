@@ -33,11 +33,14 @@ import androidx.appcompat.widget.AppCompatImageView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.heychat.R;
+<<<<<<< HEAD
+=======
+import com.example.heychat.activities.InfoGroupActivity;
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
 import com.example.heychat.listeners.CallListener;
 import com.example.heychat.listeners.MessageListener;
 import com.example.heychat.models.ChatMessage;
 import com.example.heychat.models.Group;
-import com.example.heychat.models.User;
 import com.example.heychat.network.ApiClient;
 import com.example.heychat.network.ApiService;
 import com.example.heychat.ultilities.Constants;
@@ -45,7 +48,10 @@ import com.example.heychat.ultilities.PreferenceManager;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+<<<<<<< HEAD
 import com.google.android.gms.tasks.Task;
+=======
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.firebase.firestore.DocumentChange;
@@ -54,10 +60,13 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+<<<<<<< HEAD
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+=======
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
 import com.google.mlkit.nl.translate.TranslateLanguage;
 import com.google.mlkit.nl.translate.Translation;
 import com.google.mlkit.nl.translate.Translator;
@@ -91,7 +100,7 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
 
 
     private AppCompatImageView imageBack;
-    private TextView textName;
+    private static TextView textName;
     private RecyclerView chatRecyclerView;
     private EditText inputeMessage;
     private View layoutSend, layoutImage, layoutAttact;
@@ -110,7 +119,6 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
         Bundle bundle = new Bundle();
         bundle.putSerializable(Constants.KEY_GROUP, group);
         chatBottomSheetFragment.setArguments(bundle);
-
         return chatBottomSheetFragment;
     }
 
@@ -177,6 +185,14 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
         layoutAttact = view.findViewById(R.id.layoutAttact);
 
         textName.setText(receiverUser.name);
+        textName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getContext(), InfoGroupActivity.class);
+                intent.putExtra(Constants.KEY_GROUP, receiverUser);
+                startActivity(intent);
+            }
+        });
 
         inputeMessage.addTextChangedListener(new TextWatcher() {
             @Override
@@ -239,12 +255,16 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
             for (DocumentChange documentChange : value.getDocumentChanges()) {
                 if (documentChange.getType() == DocumentChange.Type.ADDED) {
                     ChatMessage chatMessage = new ChatMessage();
+                    chatMessage.id = documentChange.getDocument().getId();
                     chatMessage.type = documentChange.getDocument().getString(Constants.KEY_MESSAGE_TYPE);
                     chatMessage.senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
                     chatMessage.receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
                     chatMessage.message = documentChange.getDocument().getString(Constants.KEY_MESSAGE);
                     chatMessage.dateTime = getReadableDateTime(documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP));
                     chatMessage.dataObject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
+                    if (Objects.equals(chatMessage.senderId, preferenceManager.getString(Constants.KEY_USER_ID)))
+                        chatMessage.model = "sender";
+                    else chatMessage.model = "receiver";
                     chatMessages.add(chatMessage);
                 }
             }
@@ -661,7 +681,7 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
 
     @NonNull
     private String getReadableDateTime(Date date) {
-        return new SimpleDateFormat("dd MMMM, yyyy - hh:mm a", Locale.getDefault()).format(date);
+        return new SimpleDateFormat("dd MMMM, yyyy\nhh:mm a", Locale.getDefault()).format(date);
     }
 
     private void checkForConversionRemotely(String receiverId) {
@@ -700,15 +720,24 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
     }
 
     @Override
+<<<<<<< HEAD
     public void onGetMessage(ChatMessage chatMessage) {
         TranslatorOptions options;
         if (preferenceManager.getString(Constants.KEY_LANGUAGE) == "VI") {
+=======
+    public void onTranslateMessage(ChatMessage chatMessage, int pos) {
+        TranslatorOptions options;
+        if (preferenceManager.getString(Constants.KEY_LANGUAGE) == "VI"){
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
             options = new TranslatorOptions.Builder()
                     .setSourceLanguage(TranslateLanguage.ENGLISH)
                     .setTargetLanguage(TranslateLanguage.VIETNAMESE)
                     .build();
         } else {
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
             options = new TranslatorOptions.Builder()
                     .setSourceLanguage(TranslateLanguage.VIETNAMESE)
                     .setTargetLanguage(TranslateLanguage.ENGLISH)
@@ -720,6 +749,10 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
         getLifecycle().addObserver(englishVITranslator);
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
         englishVITranslator.downloadModelIfNeeded().addOnSuccessListener(unused -> {
 
 
@@ -727,8 +760,16 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
                     .addOnSuccessListener(new OnSuccessListener<String>() {
                         @Override
                         public void onSuccess(String s) {
+<<<<<<< HEAD
                             chatMessage.message = s;
                             chatAdapter.notifyDataSetChanged();
+=======
+                            if (s != chatMessage.message){
+                                chatMessage.message = s;
+                                chatAdapter.notifyItemChanged(pos);
+                            } else showToast("Can't translate it!");
+
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -744,5 +785,52 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
                 showToast(e.getMessage());
             }
         });
+<<<<<<< HEAD
+=======
+
+
+    }
+
+    private void updateDataOnFB(String key){
+        database.collection(Constants.KEY_COLLECTION_CHAT_GROUPS)
+                .document(key)
+                .delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        showToast("Delete Message Successfully!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        showToast(e.getMessage());
+                    }
+                });
+    }
+
+    private void updateConversionAfterDeleteMessage(String message, String type, Date time){
+        DocumentReference documentReference =
+                database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(conversationId);
+        documentReference.update(
+                Constants.KEY_MESSAGE_TYPE, type,
+                Constants.KEY_LAST_MESSAGE, message,
+                Constants.KEY_TIMESTAMP, time
+        );
+    }
+
+    @Override
+    public void onDeleteMessage(ChatMessage chatMessage, int pos, List<ChatMessage> lastMessages) {
+        chatMessages.remove(pos);
+        chatAdapter.notifyItemRemoved(pos);
+        updateDataOnFB(chatMessage.id);
+        if (lastMessages.size() >= 1){
+            updateConversionAfterDeleteMessage(lastMessages.get(lastMessages.size()-1).message,
+                    lastMessages.get(lastMessages.size()-1).type,
+                    lastMessages.get(lastMessages.size()-1).dataObject);
+        } else if (lastMessages.size() == 0){
+            database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(conversationId).delete();
+        }
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
     }
 }

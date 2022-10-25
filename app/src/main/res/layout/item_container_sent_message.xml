@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/_8sdp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:padding="@dimen/_4sdp">
+    android:padding="@dimen/_1sdp">
 
     <RelativeLayout
         android:id="@+id/layout_message"
@@ -30,7 +30,13 @@
             android:layout_toEndOf="@id/downBtn"
             android:visibility="gone"
             android:textColor="@color/white"
+<<<<<<< HEAD
             android:textSize="@dimen/_13ssp" />
+=======
+            android:textSize="@dimen/_13ssp"
+            android:text="Message"
+            android:visibility="visible"/>
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
 
         <ImageView
             android:visibility="gone"
@@ -49,13 +55,33 @@
     </RelativeLayout>
 
     <TextView
+        android:id="@+id/txtDelete"
+        android:layout_width="@dimen/_55sdp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/_3sdp"
+        android:background="@drawable/background_translate"
+        android:backgroundTint="#2196F3"
+        android:gravity="center"
+        android:padding="@dimen/_5sdp"
+        android:text="Delete"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_10ssp"
+        android:visibility="gone"
+        android:layout_marginTop="@dimen/_10sdp"
+        app:layout_constraintEnd_toStartOf="@+id/layout_message"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
         android:id="@+id/textDateTime"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/_4sdp"
+        android:text="Text Date Time"
         android:textColor="@color/secondary_text"
         android:textSize="@dimen/_8ssp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/layout_message"/>
+        app:layout_constraintTop_toBottomOf="@id/layout_message" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

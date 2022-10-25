@@ -2,6 +2,7 @@ package com.example.heychat.adapters;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -67,6 +68,7 @@ public class RecentConversationAdapter extends RecyclerView.Adapter<RecentConver
         }
 
         void setData(ChatMessage chatMessage) {
+<<<<<<< HEAD
             if (chatMessage.type != null && chatMessage.type.equals(Constants.MESSAGE_IMAGE)){
                 binding.imageview.setVisibility(View.VISIBLE);
             } else  if (chatMessage.type != null && chatMessage.type.equals(Constants.MESSAGE_TEXT)){
@@ -76,6 +78,17 @@ public class RecentConversationAdapter extends RecyclerView.Adapter<RecentConver
             binding.textName.setText(chatMessage.conversionName);
             binding.textRecentMessage.setText(chatMessage.message);
 
+=======
+//            if (chatMessage.type.equals(Constants.MESSAGE_IMAGE)){
+//                binding.imageview.setVisibility(View.VISIBLE);
+//            } else  if (chatMessage.type.equals(Constants.MESSAGE_TEXT)){
+//                binding.imageview.setVisibility(View.GONE);
+//            }
+            binding.imageProfile.setImageBitmap(getConversionImage(chatMessage.conversionImage));
+            binding.textName.setText(chatMessage.conversionName);
+            binding.textRecentMessage.setText(chatMessage.message);
+//            Log.d("OOOO", "++"+chatMessage.type);
+>>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
 
             binding.getRoot().setOnClickListener(view -> {
                 FirebaseFirestore database = FirebaseFirestore.getInstance();
@@ -93,6 +106,7 @@ public class RecentConversationAdapter extends RecyclerView.Adapter<RecentConver
                         group.name = chatMessage.conversionName;
                         group.image = chatMessage.conversionImage;
                         conversionListener.onConversionClicker(group);
+
                     } else {
                         User user = new User();
                         user.id = chatMessage.conversionId;
