@@ -1,6 +1,7 @@
 package com.example.heychat.activities;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -29,12 +30,16 @@ import com.example.heychat.service.SinchService;
 import com.example.heychat.ultilities.Constants;
 import com.example.heychat.ultilities.PreferenceManager;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.sinch.android.rtc.PushPair;
 import com.sinch.android.rtc.SinchError;
+import com.sinch.android.rtc.calling.CallEndCause;
+import com.sinch.android.rtc.video.VideoCallListener;
 
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.List;
 import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -77,11 +82,36 @@ public class OutgoingInvitationActivity extends BaseSinchActivity implements Sin
             requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA, Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.READ_PHONE_STATE}, 100);
         }
 
+        progressBar = findViewById(R.id.call_duration);
+
+        setInfo();
+        countDownTimer = new CountDownTimer(30 * 1000, 50) {
+            @Override
+            public void onTick(long l) {
+                progressBar.setMax(30000 * 4);
+                if (currentProgress == progressBar.getMax()){
+                    cancelInvitation(receiver.token);
+                }
+
+                currentProgress += 200;
+                progressBar.setProgress(currentProgress);
+
+            }
+
+            @Override
+            public void onFinish() {
+                if (receiver != null) {
+                    currentProgress = 0;
+                }
+            }
+        };
+        countDownTimer.start();
+    }
+
+    private void setInfo(){
         CircleImageView textFirstChar = findViewById(R.id.textFirstChar);
         TextView textUsername = findViewById(R.id.textUsername);
         TextView textEmail = findViewById(R.id.outgoingtextEmail);
-        progressBar = findViewById(R.id.call_duration);
-
 
         receiver = (User) getIntent().getSerializableExtra("user");
         if (receiver != null) {
@@ -96,27 +126,6 @@ public class OutgoingInvitationActivity extends BaseSinchActivity implements Sin
                 cancelInvitation(receiver.token);
             }
         });
-
-
-        countDownTimer = new CountDownTimer(30 * 1000, 50) {
-            @Override
-            public void onTick(long l) {
-                currentProgress += 200;
-                progressBar.setProgress(currentProgress);
-                progressBar.setMax(30000 * 4);
-                if (currentProgress == progressBar.getMax()){
-                    cancelInvitation(receiver.token);
-                }
-            }
-
-            @Override
-            public void onFinish() {
-                if (receiver != null) {
-                    currentProgress = 0;
-                }
-            }
-        };
-        countDownTimer.start();
     }
 
     private void initiateMeeting(String meetingType, String receiverToken) {
@@ -218,13 +227,7 @@ public class OutgoingInvitationActivity extends BaseSinchActivity implements Sin
 //
 //                        JitsiMeetActivity.launch(OutgoingInvitationActivity.this, builder.build());
 
-//                        Intent mIntent = new Intent(OutgoingInvitationActivity.this, VideoCallActivity.class);
-//                        mIntent.putExtra(SinchService.CALL_ID, callId);
-//                        Bundle bundle = new Bundle();
-//                        bundle.putSerializable("SinchModel", sinchModel);
-//                        mIntent.putExtras(bundle);
-//                        startActivity(mIntent);
-
+//
                         Intent callScreen = new Intent(OutgoingInvitationActivity.this, VideoCallActivity.class);
                         callScreen.putExtra(SinchService.CALL_ID, callId);
                         callScreen.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -251,15 +254,17 @@ public class OutgoingInvitationActivity extends BaseSinchActivity implements Sin
                 invitationResponseReceiver,
                 new IntentFilter(Constants.REMOTE_MSG_INVITATION_RESPONSE)
         );
+
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        countDownTimer.onFinish();
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(
                 invitationResponseReceiver
         );
+
+
     }
 
     private Bitmap getUserImage(String encodedImage) {
@@ -285,15 +290,55 @@ public class OutgoingInvitationActivity extends BaseSinchActivity implements Sin
     public void onStarted() {
         com.sinch.android.rtc.calling.Call call = getSinchServiceInterface().callUserVideo(receiver.id);
         callId = call.getCallId();
-
+        call.addCallListener(new SinchCallListener());
         FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(task -> {
             if (task.isSuccessful() && task.getResult() != null) {
                 inviterToken = task.getResult().getToken();
-                if (meetingType != null && receiver != null) {
+                if (meetingType != null && receiver != null && callId != null) {
                     initiateMeeting(meetingType, receiver.token);
                 }
             }
         });
+    }
+
+    private class SinchCallListener implements VideoCallListener {
+
+        @Override
+        public void onCallEnded(com.sinch.android.rtc.calling.Call call) {
+            CallEndCause cause = call.getDetails().getEndCause();
+            Log.d("stopClient", "Call ended outComing, cause: " + cause.toString());
+            finish();
+        }
+
+        @Override
+        public void onCallEstablished(com.sinch.android.rtc.calling.Call call) {
+//            Log.d(TAG, "Call established");
+        }
+
+        @Override
+        public void onCallProgressing(com.sinch.android.rtc.calling.Call call) {
+//            Log.d(TAG, "Call progressing");
+        }
+
+        @Override
+        public void onShouldSendPushNotification(com.sinch.android.rtc.calling.Call call, List<PushPair> pushPairs) {
+            // Send a push through your push provider here, e.g. GCM
+        }
+
+        @Override
+        public void onVideoTrackAdded(com.sinch.android.rtc.calling.Call call) {
+            // Display some kind of icon showing it's a video call
+        }
+
+        @Override
+        public void onVideoTrackPaused(com.sinch.android.rtc.calling.Call call) {
+
+        }
+
+        @Override
+        public void onVideoTrackResumed(com.sinch.android.rtc.calling.Call call) {
+
+        }
     }
 
 

@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -28,11 +29,17 @@ import com.example.heychat.network.ApiService;
 import com.example.heychat.service.SinchService;
 import com.example.heychat.ultilities.Constants;
 import com.example.heychat.ultilities.PreferenceManager;
+import com.sinch.android.rtc.PushPair;
 import com.sinch.android.rtc.Sinch;
 import com.sinch.android.rtc.SinchClient;
+import com.sinch.android.rtc.SinchError;
+import com.sinch.android.rtc.calling.CallEndCause;
+import com.sinch.android.rtc.video.VideoCallListener;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import retrofit2.Call;
@@ -140,19 +147,21 @@ public class IncomingInvitationActivity extends BaseSinchActivity {
 //                                    }
 //
 //                                    JitsiMeetActivity.launch(IncomingInvitationActivity.this, builder.build());
-                                    Toast.makeText(IncomingInvitationActivity.this, "Accepted: "+ callId, Toast.LENGTH_SHORT).show();
-                                    music.stop();
+                                    if (meetingType.equals("video")){
+                                        Toast.makeText(IncomingInvitationActivity.this, "Accepted: "+ callId, Toast.LENGTH_SHORT).show();
+                                        music.stop();
+                                        com.sinch.android.rtc.calling.Call sinchCall = getSinchServiceInterface().getCall(callId);
 
-                                   com.sinch.android.rtc.calling.Call sinchCall = getSinchServiceInterface().getCall(callId);
-
-                                    if (sinchCall != null) {
-                                        sinchCall.answer();
-                                        Intent intent = new Intent(IncomingInvitationActivity.this, VideoCallActivity.class);
-                                        intent.putExtra(SinchService.CALL_ID, callId);
-                                        startActivity(intent);
-                                        finish();
-                                    } else {
-                                        finish();
+                                        if (sinchCall != null) {
+                                            sinchCall.addCallListener(new SinchCallListener());
+                                            sinchCall.answer();
+                                            Intent intent = new Intent(IncomingInvitationActivity.this, VideoCallActivity.class);
+                                            intent.putExtra(SinchService.CALL_ID, callId);
+                                            startActivity(intent);
+                                            finish();
+                                        } else {
+                                            finish();
+                                        }
                                     }
 
                                 } catch (Exception exception){
@@ -179,19 +188,6 @@ public class IncomingInvitationActivity extends BaseSinchActivity {
                     }
                 });
     }
-
-//    @Override
-//    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//        if (requestCode == 1){
-//            if (resultCode == RESULT_OK){
-//                String myStr = data.getStringExtra("endcall");
-//                if (myStr != null){
-//                    finish();
-//                }
-//            }
-//        }
-//    }
 
     private BroadcastReceiver invitationResponseReceiver = new BroadcastReceiver() {
         @Override
@@ -224,7 +220,6 @@ public class IncomingInvitationActivity extends BaseSinchActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        Log.d("BBB", "onStart");
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(
                 invitationResponseReceiver,
                 new IntentFilter(Constants.REMOTE_MSG_INVITATION_RESPONSE)
@@ -248,9 +243,49 @@ public class IncomingInvitationActivity extends BaseSinchActivity {
         );
     }
 
-
     private Bitmap getUserImage(String encodedImage){
         byte[] bytes = Base64.decode(encodedImage, Base64.DEFAULT);
         return BitmapFactory.decodeByteArray(bytes,0, bytes.length);
+    }
+
+
+    private class SinchCallListener implements VideoCallListener {
+
+        @Override
+        public void onCallEnded(com.sinch.android.rtc.calling.Call call) {
+            CallEndCause cause = call.getDetails().getEndCause();
+            Log.d("stopClient", "Call ended incoming, cause: " + cause.toString());
+            finish();
+        }
+
+        @Override
+        public void onCallEstablished(com.sinch.android.rtc.calling.Call call) {
+//            Log.d(TAG, "Call established");
+        }
+
+        @Override
+        public void onCallProgressing(com.sinch.android.rtc.calling.Call call) {
+//            Log.d(TAG, "Call progressing");
+        }
+
+        @Override
+        public void onShouldSendPushNotification(com.sinch.android.rtc.calling.Call call, List<PushPair> pushPairs) {
+            // Send a push through your push provider here, e.g. GCM
+        }
+
+        @Override
+        public void onVideoTrackAdded(com.sinch.android.rtc.calling.Call call) {
+            // Display some kind of icon showing it's a video call
+        }
+
+        @Override
+        public void onVideoTrackPaused(com.sinch.android.rtc.calling.Call call) {
+
+        }
+
+        @Override
+        public void onVideoTrackResumed(com.sinch.android.rtc.calling.Call call) {
+
+        }
     }
 }

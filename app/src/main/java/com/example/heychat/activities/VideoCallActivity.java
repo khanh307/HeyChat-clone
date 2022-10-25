@@ -84,7 +84,6 @@ public class VideoCallActivity extends BaseSinchActivity {
         Bundle bundle = getIntent().getExtras();
 
         mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
-        Log.d("callidall", "incomming: " + mCallId);
 
         endCallButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -222,8 +221,8 @@ public class VideoCallActivity extends BaseSinchActivity {
             setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
             String endMsg = "Call ended: " + call.getDetails().toString();
             Toast.makeText(VideoCallActivity.this, endMsg, Toast.LENGTH_LONG).show();
-
             endCall();
+            getSinchServiceInterface().stopClient();
         }
 
         @Override

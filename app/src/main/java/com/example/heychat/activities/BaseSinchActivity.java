@@ -17,11 +17,13 @@ public abstract class BaseSinchActivity extends AppCompatActivity implements Ser
 
     private SinchService.SinchServiceInterface mSinchServiceInterface;
     private PreferenceManager preferenceManager;
+    private Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getApplicationContext().bindService(new Intent(this, SinchService.class), this,
+        intent = new Intent(this, SinchService.class);
+        getApplicationContext().bindService(intent, this,
                 BIND_AUTO_CREATE);
         preferenceManager = new PreferenceManager(this);
     }
@@ -42,7 +44,7 @@ public abstract class BaseSinchActivity extends AppCompatActivity implements Ser
             mSinchServiceInterface.stopClient();
             mSinchServiceInterface = null;
             onServiceDisconnected();
-            Log.d("serviceapp", "BaseSinchActivity onServiceDisconnected");
+            Log.d("stopClient", "BaseSinchActivity onServiceDisconnected");
         }
     }
 
@@ -51,11 +53,17 @@ public abstract class BaseSinchActivity extends AppCompatActivity implements Ser
     }
 
     protected void onServiceDisconnected() {
-        // for subclasses
+        onStop();
     }
 
     protected SinchService.SinchServiceInterface getSinchServiceInterface() {
         return mSinchServiceInterface;
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopService(intent);
+        Log.d("stopClient", "BaseSinchActivity onStop");
+    }
 }
