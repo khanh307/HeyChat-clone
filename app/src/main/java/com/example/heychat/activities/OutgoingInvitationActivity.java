@@ -4,15 +4,18 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Base64;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -22,9 +25,11 @@ import com.example.heychat.R;
 import com.example.heychat.models.User;
 import com.example.heychat.network.ApiClient;
 import com.example.heychat.network.ApiService;
+import com.example.heychat.service.SinchService;
 import com.example.heychat.ultilities.Constants;
 import com.example.heychat.ultilities.PreferenceManager;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.sinch.android.rtc.SinchError;
 
 
 import org.json.JSONArray;
@@ -37,7 +42,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class OutgoingInvitationActivity extends AppCompatActivity {
+public class OutgoingInvitationActivity extends BaseSinchActivity implements SinchService.StartFailedListener {
 
     private PreferenceManager preferenceManager;
     private String inviterToken = null;
@@ -47,6 +52,7 @@ public class OutgoingInvitationActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private CountDownTimer countDownTimer;
     private User receiver;
+    private String callId;
 
 
     @Override
@@ -65,6 +71,10 @@ public class OutgoingInvitationActivity extends AppCompatActivity {
             } else {
                 imageMeetingType.setImageResource(R.drawable.ic_call);
             }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA, Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.READ_PHONE_STATE}, 100);
         }
 
         CircleImageView textFirstChar = findViewById(R.id.textFirstChar);
@@ -87,33 +97,27 @@ public class OutgoingInvitationActivity extends AppCompatActivity {
             }
         });
 
-        FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(task -> {
-            if (task.isSuccessful() && task.getResult() != null) {
-                inviterToken = task.getResult().getToken();
-                if (meetingType != null && receiver != null) {
-                    initiateMeeting(meetingType, receiver.token);
-                }
-            }
-        });
+
         countDownTimer = new CountDownTimer(30 * 1000, 50) {
             @Override
             public void onTick(long l) {
                 currentProgress += 200;
                 progressBar.setProgress(currentProgress);
                 progressBar.setMax(30000 * 4);
+                if (currentProgress == progressBar.getMax()){
+                    cancelInvitation(receiver.token);
+                }
             }
 
             @Override
             public void onFinish() {
                 if (receiver != null) {
-                    cancelInvitation(receiver.token);
                     currentProgress = 0;
                 }
             }
         };
         countDownTimer.start();
     }
-
 
     private void initiateMeeting(String meetingType, String receiverToken) {
         try {
@@ -132,7 +136,7 @@ public class OutgoingInvitationActivity extends AppCompatActivity {
             meetingRoom = preferenceManager.getString(Constants.KEY_USER_ID) + "_" +
                     UUID.randomUUID().toString().substring(0, 5);
             data.put(Constants.REMOTE_MSG_MEETING_ROOM, meetingRoom);
-//            data.put(SinchService.CALL_ID, callId);
+            data.put(SinchService.CALL_ID, callId);
 
             body.put(Constants.REMOTE_MSG_DATA, data);
             body.put(Constants.REMOTE_MSG_REGISTRATION_IDS, tokens);
@@ -155,6 +159,7 @@ public class OutgoingInvitationActivity extends AppCompatActivity {
                                 Toast.makeText(OutgoingInvitationActivity.this, "Invitation send successful", Toast.LENGTH_SHORT).show();
                             } else if (type.equals(Constants.REMOTE_MSG_INVITATION_RESPONSE)) {
                                 Toast.makeText(OutgoingInvitationActivity.this, "Invitation Cancelled", Toast.LENGTH_SHORT).show();
+                                getSinchServiceInterface().stopClient();
                                 finish();
                             }
                         } else {
@@ -220,7 +225,11 @@ public class OutgoingInvitationActivity extends AppCompatActivity {
 //                        mIntent.putExtras(bundle);
 //                        startActivity(mIntent);
 
-                        Toast.makeText(context, "Accepted", Toast.LENGTH_SHORT).show();
+                        Intent callScreen = new Intent(OutgoingInvitationActivity.this, VideoCallActivity.class);
+                        callScreen.putExtra(SinchService.CALL_ID, callId);
+                        callScreen.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(callScreen);
+                        Toast.makeText(context, "Accepted "+ callId, Toast.LENGTH_SHORT).show();
                         finish();
                     } catch (Exception exception) {
                         Toast.makeText(context, exception.getMessage(), Toast.LENGTH_SHORT).show();
@@ -228,6 +237,7 @@ public class OutgoingInvitationActivity extends AppCompatActivity {
                     }
                 } else if (type.trim().equals(Constants.REMOTE_MSG_INVITATION_REJECTED)) {
                     Toast.makeText(context, "Invitation Rejected", Toast.LENGTH_SHORT).show();
+                    getSinchServiceInterface().stopClient();
                     finish();
                 }
             }
@@ -256,4 +266,35 @@ public class OutgoingInvitationActivity extends AppCompatActivity {
         byte[] bytes = Base64.decode(encodedImage, Base64.DEFAULT);
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
     }
+
+    //this method is invoked when the connection is established with the SinchService
+    @Override
+    protected void onServiceConnected() {
+        Log.d("serviceapp", "MainActivity  onServiceConnected");
+        getSinchServiceInterface().setStartListener(this);
+    }
+
+
+    @Override
+    public void onStartFailed(SinchError error) {
+        Log.d("serviceapp", "MainActivity  onStartFailed");
+        Toast.makeText(this, error.toString(), Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onStarted() {
+        com.sinch.android.rtc.calling.Call call = getSinchServiceInterface().callUserVideo(receiver.id);
+        callId = call.getCallId();
+
+        FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult() != null) {
+                inviterToken = task.getResult().getToken();
+                if (meetingType != null && receiver != null) {
+                    initiateMeeting(meetingType, receiver.token);
+                }
+            }
+        });
+    }
+
+
 }

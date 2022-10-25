@@ -24,9 +24,9 @@ public class SinchService extends Service {
 //    private static final String APP_SECRET = "ody9v8Xo6UWLLtwjjsi3ag==";
 //    private static final String ENVIRONMENT = "sandbox.sinch.com";
 
-    private static final String APP_KEY = "c418c4da-2b5c-4d3a-a555-fa193e115802";
-    private static final String APP_SECRET = "PxrSTOQVlkCDNi+zLNtYpg==";
-    private static final String ENVIRONMENT = "sandbox.sinch.com";
+    public static final String APP_KEY = "c418c4da-2b5c-4d3a-a555-fa193e115802";
+    public static final String APP_SECRET = "PxrSTOQVlkCDNi+zLNtYpg==";
+    public static final String ENVIRONMENT = "sandbox.sinch.com";
 
     public static final String CALL_ID = "CALL_ID";
     static final String TAG = SinchService.class.getSimpleName();
@@ -105,6 +105,7 @@ public class SinchService extends Service {
         }
 
         public void stopClient() {
+            Log.d("stopClient", getUserName());
             stop();
         }
 
@@ -193,11 +194,11 @@ public class SinchService extends Service {
 
         @Override
         public void onIncomingCall(CallClient callClient, Call call) {
-            Log.d(TAG, "Incoming call");
-            Intent intent = new Intent(SinchService.this, IncomingInvitationActivity.class);
-            intent.putExtra(CALL_ID, call.getCallId());
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            SinchService.this.startActivity(intent);
+//            Log.d(TAG, "Incoming call");
+//            Intent intent = new Intent(SinchService.this, IncomingInvitationActivity.class);
+//            intent.putExtra(CALL_ID, call.getCallId());
+//            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//            SinchService.this.startActivity(intent);
         }
     }
 

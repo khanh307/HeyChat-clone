@@ -1,10 +1,12 @@
 package com.example.heychat.activities;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.annotation.SuppressLint;
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -23,8 +25,11 @@ import android.widget.Toast;
 import com.example.heychat.R;
 import com.example.heychat.network.ApiClient;
 import com.example.heychat.network.ApiService;
+import com.example.heychat.service.SinchService;
 import com.example.heychat.ultilities.Constants;
 import com.example.heychat.ultilities.PreferenceManager;
+import com.sinch.android.rtc.Sinch;
+import com.sinch.android.rtc.SinchClient;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -34,11 +39,12 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class IncomingInvitationActivity extends AppCompatActivity {
+public class IncomingInvitationActivity extends BaseSinchActivity {
 
     private MediaPlayer music;
     private String meetingType = null;
     private PreferenceManager preferenceManager;
+    private String callId;
 
 
     @SuppressLint("MissingInflatedId")
@@ -52,7 +58,6 @@ public class IncomingInvitationActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
-
         ImageView imageMeetingType = findViewById(R.id.imageMeetingType);
         meetingType = getIntent().getStringExtra(Constants.REMOTE_MSG_MEETING_TYPE);
 
@@ -63,6 +68,7 @@ public class IncomingInvitationActivity extends AppCompatActivity {
                 imageMeetingType.setImageResource(R.drawable.ic_call);
             }
         }
+
         CircleImageView textFirstChar = findViewById(R.id.image_user_incoming);
         TextView textUsername = findViewById(R.id.textUsername);
         TextView textEmail = findViewById(R.id.incomingtextEmail);
@@ -75,6 +81,8 @@ public class IncomingInvitationActivity extends AppCompatActivity {
                 getIntent().getStringExtra(Constants.KEY_EMAIL)
         );
 
+        callId = getIntent().getStringExtra(SinchService.CALL_ID);
+
         ImageView imageAcceptInvitation = findViewById(R.id.imageAcceptInvitaion);
         imageAcceptInvitation.setOnClickListener(v -> sendInvitationResponse(
                 Constants.REMOTE_MSG_INVITATION_ACCEPTED,
@@ -86,7 +94,6 @@ public class IncomingInvitationActivity extends AppCompatActivity {
                 Constants.REMOTE_MSG_INVITATION_REJECTED,
                 getIntent().getStringExtra(Constants.REMOTE_MSG_INVITER_TOKEN)
         ));
-
 
     }
 
@@ -105,8 +112,6 @@ public class IncomingInvitationActivity extends AppCompatActivity {
             body.put(Constants.REMOTE_MSG_REGISTRATION_IDS, tokens);
 
             sendRemoteMessage(body.toString(), type);
-
-
         } catch (Exception exception){
             Toast.makeText(IncomingInvitationActivity.this, exception.getMessage(), Toast.LENGTH_SHORT).show();
             finish();
@@ -135,14 +140,21 @@ public class IncomingInvitationActivity extends AppCompatActivity {
 //                                    }
 //
 //                                    JitsiMeetActivity.launch(IncomingInvitationActivity.this, builder.build());
-                                    Toast.makeText(IncomingInvitationActivity.this, "Accepted: ", Toast.LENGTH_SHORT).show();
-//                                    Intent intent = new Intent(IncomingInvitationActivity.this, VideoCallActivity.class);
-//                                    intent.putExtra(SinchService.CALL_ID, callId);
-//                                    Bundle bundle = new Bundle();
-//                                    bundle.putSerializable("SinchModel", sinchModel);
-//                                    intent.putExtras(bundle);
-//                                    startActivity(intent);
+                                    Toast.makeText(IncomingInvitationActivity.this, "Accepted: "+ callId, Toast.LENGTH_SHORT).show();
+                                    music.stop();
+
+                                   com.sinch.android.rtc.calling.Call sinchCall = getSinchServiceInterface().getCall(callId);
+
+                                    if (sinchCall != null) {
+                                        sinchCall.answer();
+                                        Intent intent = new Intent(IncomingInvitationActivity.this, VideoCallActivity.class);
+                                        intent.putExtra(SinchService.CALL_ID, callId);
+                                        startActivity(intent);
                                         finish();
+                                    } else {
+                                        finish();
+                                    }
+
                                 } catch (Exception exception){
                                     Toast.makeText(IncomingInvitationActivity.this, exception.getMessage(), Toast.LENGTH_SHORT).show();
                                     finish();
@@ -150,6 +162,7 @@ public class IncomingInvitationActivity extends AppCompatActivity {
 
                             } else {
                                 Toast.makeText(IncomingInvitationActivity.this, "Invitation Rejected", Toast.LENGTH_SHORT).show();
+                                getSinchServiceInterface().stopClient();
                                 finish();
                             }
                         } else {
@@ -167,19 +180,44 @@ public class IncomingInvitationActivity extends AppCompatActivity {
                 });
     }
 
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//        if (requestCode == 1){
+//            if (resultCode == RESULT_OK){
+//                String myStr = data.getStringExtra("endcall");
+//                if (myStr != null){
+//                    finish();
+//                }
+//            }
+//        }
+//    }
+
     private BroadcastReceiver invitationResponseReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
 
             preferenceManager = new PreferenceManager(getApplicationContext());
+            String userName = preferenceManager.getString(Constants.KEY_USER_ID);
+            SinchClient mSinchClient;
+            mSinchClient = Sinch.getSinchClientBuilder().context(getApplicationContext()).userId(userName)
+                    .applicationKey(SinchService.APP_KEY)
+                    .applicationSecret(SinchService.APP_SECRET)
+                    .environmentHost(SinchService.ENVIRONMENT).build();
+
+            mSinchClient.setSupportCalling(true);
+            mSinchClient.startListeningOnActiveConnection();
+            mSinchClient.start();
 
             String type = intent.getStringExtra(Constants.REMOTE_MSG_INVITATION_RESPONSE);
             if(type != null){
                 if (type.equals(Constants.REMOTE_MSG_INVITATION_CANCELLED)){
                     Toast.makeText(IncomingInvitationActivity.this, "Invitation Cancelled", Toast.LENGTH_SHORT).show();
+                    getSinchServiceInterface().stopClient();
                     finish();
                 }
             }
+
         }
     };
 

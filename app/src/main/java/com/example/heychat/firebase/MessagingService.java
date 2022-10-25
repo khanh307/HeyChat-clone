@@ -77,10 +77,10 @@ public class MessagingService extends FirebaseMessagingService {
                         remoteMessage.getData().get(Constants.REMOTE_MSG_MEETING_ROOM)
                 );
 
-//                intent.putExtra(
-//                  SinchService.CALL_ID,
-//                  remoteMessage.getData().get(SinchService.CALL_ID)
-//                );
+                intent.putExtra(
+                  SinchService.CALL_ID,
+                  remoteMessage.getData().get(SinchService.CALL_ID)
+                );
 
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 getApplicationContext().startActivity(intent);
