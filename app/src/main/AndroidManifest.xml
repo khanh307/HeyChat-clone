@@ -32,6 +32,9 @@
             android:name=".activities.PrivateChatActivity"
             android:exported="false" />
         <activity
+            android:name=".activities.PrivateChatActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.InfoGroupActivity"
             android:exported="false" />
         <activity

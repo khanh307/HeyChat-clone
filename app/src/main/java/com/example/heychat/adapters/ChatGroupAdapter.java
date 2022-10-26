@@ -67,6 +67,15 @@ public class ChatGroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (getItemViewType(position) == VIEW_TYPE_SENT) {
             ((SentMessageViewHolder) holder).setTextData(chatMessages.get(position));
+            if (position == chatMessages.size() - 1) {
+                ((ChatGroupAdapter.SentMessageViewHolder) holder).binding.textSeenMessage.setVisibility(View.VISIBLE);
+            } else {
+                ((ChatGroupAdapter.SentMessageViewHolder) holder).binding.textSeenMessage.setVisibility(View.GONE);
+            }
+            if (chatMessages.get(position).isSeen)
+                ((ChatGroupAdapter.SentMessageViewHolder) holder).binding.textSeenMessage.setText("Seen");
+            else
+                ((ChatGroupAdapter.SentMessageViewHolder) holder).binding.textSeenMessage.setText("Delivered");
         } else if (getItemViewType(position) == VIEW_TYPE_RECEIVED) {
             ((ReceivedMessageViewHolder) holder).setTextData(chatMessages.get(position));
         } else if (getItemViewType(position) == VIEW_TYPE_SENT_IMAGE) {

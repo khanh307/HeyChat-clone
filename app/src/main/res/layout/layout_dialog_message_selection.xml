@@ -174,7 +174,7 @@
                 android:layout_below="@id/imageMultipleSelection"
                 android:layout_centerHorizontal="true"
                 android:gravity="center"
-                android:text="Multiple Selection"
+                android:text="Detail"
                 android:textColor="@color/black"
                 android:textSize="@dimen/_11ssp" />
 
@@ -183,7 +183,9 @@
                 android:layout_width="@dimen/_25ssp"
                 android:layout_height="@dimen/_25sdp"
                 android:layout_centerHorizontal="true"
-                android:src="@drawable/ic_check_circle" />
+                android:src="@drawable/ic_info"
+                android:backgroundTint="#B5FA9500"
+                app:tint="#B5FA9500" />
 
         </RelativeLayout>
 

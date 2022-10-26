@@ -4,10 +4,22 @@ import androidx.appcompat.widget.AppCompatImageView;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.view.ActionMode;
+import android.view.Gravity;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.example.heychat.R;
 import com.example.heychat.adapters.PrivateChatAdapter;
@@ -226,9 +238,107 @@ public class PrivateChatActivity extends BaseActivity implements MessageListener
     }
 
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
-    public void onMessageSelection(Boolean isSelected, int position, List<ChatMessage> chatMessages, ChatMessage chatMessage) {
+    public void onMessageSelection(Boolean isSelected, int position, List<ChatMessage> lastMessages, ChatMessage chatMessage) {
+        final Dialog dialog = openDialog(R.layout.layout_dialog_message_selection);
+        assert dialog != null;
+        TextView textMessage = dialog.findViewById(R.id.textMessage);
+        TextView textDateTime = dialog.findViewById(R.id.textDateTime);
+        TextView textSeenMessage = dialog.findViewById(R.id.textSeenMessage);
+        RelativeLayout layoutTranslate = dialog.findViewById(R.id.relativeLayoutTranslate);
+        RelativeLayout layoutCopy = dialog.findViewById(R.id.relativeLayoutCopy);
+        RelativeLayout layoutMultipleSelection = dialog.findViewById(R.id.relativeLayoutMultipleSelection);
+        RelativeLayout layoutDelete = dialog.findViewById(R.id.relativeLayoutDelete);
+        ImageView imageCheck = dialog.findViewById(R.id.imageCheck);
 
+        textMessage.setText(lastMessages.get(position).message);
+        textDateTime.setText(lastMessages.get(position).dateTime);
+        if (lastMessages.get(position).isSeen){
+            textSeenMessage.setText("Seen");
+            imageCheck.setVisibility(View.VISIBLE);
+        } else {
+            textSeenMessage.setText("Delivered");
+            imageCheck.setVisibility(View.GONE);
+        }
+
+        layoutTranslate.setOnClickListener(view -> {
+            TranslatorOptions options;
+            if (Objects.equals(preferenceManager.getString(Constants.KEY_LANGUAGE), "VI")) {
+                options = new TranslatorOptions.Builder()
+                        .setSourceLanguage(TranslateLanguage.ENGLISH)
+                        .setTargetLanguage(TranslateLanguage.VIETNAMESE)
+                        .build();
+            } else {
+                options = new TranslatorOptions.Builder()
+                        .setSourceLanguage(TranslateLanguage.VIETNAMESE)
+                        .setTargetLanguage(TranslateLanguage.ENGLISH)
+                        .build();
+            }
+
+            Translator englishVITranslator = Translation.getClient(options);
+
+            getLifecycle().addObserver(englishVITranslator);
+
+
+            englishVITranslator.downloadModelIfNeeded().addOnSuccessListener(unused -> englishVITranslator.translate(textMessage.getText().toString())
+                    .addOnSuccessListener(textMessage::setText)
+                    .addOnFailureListener(e -> showToast(e.getMessage()))).addOnFailureListener(e -> showToast(e.getMessage()));
+
+            showToast("Translated the message");
+        });
+
+        layoutCopy.setOnClickListener(view -> {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("message", textMessage.getText().toString());
+            clipboard.setPrimaryClip(clip);
+            showToast("Copied the message!");
+            dialog.dismiss();
+        });
+
+        layoutMultipleSelection.setOnClickListener(view -> {
+
+        });
+
+        layoutDelete.setOnClickListener(view -> {
+            chatMessages.remove(position);
+            chatAdapter.notifyItemRemoved(position);
+            chatAdapter.notifyItemChanged(position);
+            chatAdapter.notifyDataSetChanged();
+            chatAdapter.notifyItemRangeInserted(0, chatMessages.size());
+            updateDataOnFB(chatMessage.id);
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
+    private void updateDataOnFB(String key){
+        database.collection(Constants.KEY_COLLECTION_CHAT_GROUPS)
+                .document(key)
+                .delete()
+                .addOnSuccessListener(unused -> showToast("Delete Message Successfully!"))
+                .addOnFailureListener(e -> showToast(e.getMessage()));
+    }
+
+
+    private Dialog openDialog(int layout) {
+        final Dialog dialog = new Dialog(getApplicationContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(layout);
+        dialog.setCancelable(true);
+        Window window = dialog.getWindow();
+        if (window == null) {
+            return null;
+        }
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        WindowManager.LayoutParams windowAttributes = window.getAttributes();
+        windowAttributes.gravity = Gravity.BOTTOM;
+        window.setAttributes(windowAttributes);
+
+        return dialog;
     }
 
 

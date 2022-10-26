@@ -240,6 +240,11 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
             int count = chatMessages.size();
             for (DocumentChange documentChange : value.getDocumentChanges()) {
                 if (documentChange.getType() == DocumentChange.Type.ADDED) {
+                    HashMap<String, Object> seen = new HashMap<>();
+                    seen.put(Constants.KEY_SEEN_MESSAGE, true);
+                    database.collection(Constants.KEY_COLLECTION_CHAT_GROUPS)
+                            .document(documentChange.getDocument().getId())
+                            .update(seen);
                     ChatMessage chatMessage = new ChatMessage();
                     chatMessage.id = documentChange.getDocument().getId();
                     chatMessage.type = documentChange.getDocument().getString(Constants.KEY_MESSAGE_TYPE);
@@ -251,12 +256,14 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
                     if (Objects.equals(chatMessage.senderId, preferenceManager.getString(Constants.KEY_USER_ID)))
                         chatMessage.model = "sender";
                     else chatMessage.model = "receiver";
+                    chatMessage.isSeen = documentChange.getDocument().getBoolean(Constants.KEY_SEEN_MESSAGE);
                     chatMessages.add(chatMessage);
                 }
             }
 
             Collections.sort(chatMessages, (obj1, obj2) -> obj1.dataObject.compareTo(obj2.dataObject));
             if (count == 0) {
+                chatAdapter.notifyItemRangeInserted(0, chatAdapter.getItemCount());
                 chatAdapter.notifyDataSetChanged();
             } else {
                 chatAdapter.notifyItemRangeInserted(chatMessages.size(), chatMessages.size());

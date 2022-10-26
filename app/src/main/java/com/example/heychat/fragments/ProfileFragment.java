@@ -201,8 +201,6 @@ public class ProfileFragment extends Fragment {
                                                 .set(member);
 
                                     });
-
-
                             break;
                         }
                     }
