@@ -13,14 +13,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -87,10 +90,14 @@ public class MainActivity2 extends AppCompatActivity implements UserListener{
         binding.recyclerviewUserOnline.setAdapter(userOnlineAdapter);
         getUsersOnline();
 
+        if(preferenceManager.getString(Constants.KEY_LANGUAGE) == null){
+            preferenceManager.putString(Constants.KEY_LANGUAGE, "VI");
+        }
+
         binding.searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), SearchActivity.class);
+                Intent intent = new Intent(getApplicationContext(), GroupActivity.class);
                 startActivity(intent);
 
 //                Intent intent = new Intent(getApplicationContext(), GroupActivity.class);
@@ -230,7 +237,15 @@ public class MainActivity2 extends AppCompatActivity implements UserListener{
     }
 
 
+    @Override
+    protected void attachBaseContext(Context newBase) {
 
+        final Configuration override = new Configuration(newBase.getResources().getConfiguration());
+        override.fontScale = 1.0f;
+        applyOverrideConfiguration(override);
+
+        super.attachBaseContext(newBase);
+    }
 
 
 

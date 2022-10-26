@@ -145,13 +145,7 @@ public class PrivateChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                     } else{
                         binding.txtTranslate.setVisibility(View.VISIBLE);
                     }
-                    messageListener.onMessageSelection(chatMessages.get(pos).isSelected);
-                }
-            });
-            binding.txtTranslate.setOnClickListener(view -> {
-                if (messageListener != null){
-                    int pos = getAdapterPosition();
-                    messageListener.onTranslateMessage(chatMessages.get(pos), pos);
+                    messageListener.onMessageSelection(chatMessages.get(pos).isSelected, pos, chatMessages, chatMessages.get(pos));
                 }
             });
         }

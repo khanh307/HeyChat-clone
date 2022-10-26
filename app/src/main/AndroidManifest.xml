@@ -25,17 +25,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.HeyChat"
-        tools:targetApi="31">
+        tools:targetApi="31"
+        tools:ignore="ExtraText">
         <activity
-<<<<<<< HEAD
             android:name=".activities.VideoCallActivity" />
-=======
             android:name=".activities.PrivateChatActivity"
             android:exported="false" />
         <activity
             android:name=".activities.InfoGroupActivity"
             android:exported="false" />
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
         <activity
             android:name=".activities.ConversationGroupActivity"
             android:exported="false" />
@@ -103,7 +101,6 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-<<<<<<< HEAD
 
         <service android:name=".service.SinchService"/>
 =======

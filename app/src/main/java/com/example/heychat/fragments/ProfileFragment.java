@@ -1,6 +1,7 @@
 package com.example.heychat.fragments;
 
 import static android.app.Activity.RESULT_OK;
+
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Intent;
@@ -27,13 +28,11 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-<<<<<<< HEAD
-=======
 
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.Fragment;
+
 import com.example.heychat.R;
 import com.example.heychat.activities.PrivateChatActivity;
 import com.example.heychat.activities.SignInActivity;
@@ -44,11 +43,8 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-<<<<<<< HEAD
-=======
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -252,15 +248,10 @@ public class ProfileFragment extends Fragment {
     }
 
     private void updateProfile(String name) {
-        if(encodedImage != null){
-            database.collection(Constants.KEY_COLLECTION_USER).document(userId).update("image", encodedImage);
-            database.collection(Constants.KEY_COLLECTION_USER).document(userId).update("name", name);
-            preferenceManager.putString(Constants.KEY_NAME, name);
-            preferenceManager.putString(Constants.KEY_IMAGE, encodedImage);
-        } else {
-            database.collection(Constants.KEY_COLLECTION_USER).document(userId).update("name", name);
-            preferenceManager.putString(Constants.KEY_NAME, name);
-        }
+        database.collection(Constants.KEY_COLLECTION_USER).document(userId).update("image", encodedImage);
+        database.collection(Constants.KEY_COLLECTION_USER).document(userId).update("name", name);
+        preferenceManager.putString(Constants.KEY_NAME, name);
+        preferenceManager.putString(Constants.KEY_IMAGE, encodedImage);
         loadUserDetail();
         showToast("Update profile successful");
     }
@@ -301,11 +292,7 @@ public class ProfileFragment extends Fragment {
         Button yes_btn = dialog.findViewById(R.id.yes_btn);
         Button no_btn = dialog.findViewById(R.id.no_btn);
 
-<<<<<<< HEAD
-        yes_btn.setOnClickListener(view -> showToast(size.getProgress()+""));
-=======
         yes_btn.setOnClickListener(view -> showToast(size.getProgress() + ""));
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
         no_btn.setOnClickListener(view -> dialog.dismiss());
 
         dialog.show();
@@ -319,11 +306,11 @@ public class ProfileFragment extends Fragment {
         Button yes_btn = dialog.findViewById(R.id.yes_btn);
         Button no_btn = dialog.findViewById(R.id.no_btn);
 
-<<<<<<< HEAD
-        if (Objects.equals(preferenceManager.getString(Constants.KEY_LANGUAGE), "VI")){
-=======
+        if(preferenceManager.getString(Constants.KEY_LANGUAGE) == null){
+            preferenceManager.putString(Constants.KEY_LANGUAGE, "VI");
+        }
+
         if (Objects.equals(preferenceManager.getString(Constants.KEY_LANGUAGE), "VI")) {
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
             vietnamese.setChecked(true);
             english.setChecked(false);
         } else {
@@ -340,15 +327,6 @@ public class ProfileFragment extends Fragment {
         });
 
         yes_btn.setOnClickListener(view -> {
-<<<<<<< HEAD
-            if (vietnamese.isChecked()){
-                showToast("vietnamese");
-                preferenceManager.putString(Constants.KEY_LANGUAGE, "VI");
-            } else{
-                preferenceManager.putString(Constants.KEY_LANGUAGE, "EN");
-                showToast("english");
-            }
-=======
             if (vietnamese.isChecked()) {
                 showToast("VIETNAMESE");
                 preferenceManager.putString(Constants.KEY_LANGUAGE, "VI");
@@ -357,7 +335,6 @@ public class ProfileFragment extends Fragment {
                 preferenceManager.putString(Constants.KEY_LANGUAGE, "EN");
             }
             dialog.dismiss();
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
 
         });
         no_btn.setOnClickListener(view -> dialog.dismiss());
@@ -372,11 +349,7 @@ public class ProfileFragment extends Fragment {
         Button yes_btn = dialog.findViewById(R.id.yes_btn);
         Button no_btn = dialog.findViewById(R.id.no_btn);
 
-<<<<<<< HEAD
-        yes_btn.setOnClickListener(v-> signOut());
-=======
         yes_btn.setOnClickListener(v -> signOut());
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
         no_btn.setOnClickListener(view -> dialog.dismiss());
         dialog.show();
     }

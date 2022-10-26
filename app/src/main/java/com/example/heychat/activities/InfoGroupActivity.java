@@ -136,6 +136,7 @@ public class InfoGroupActivity extends AppCompatActivity implements UserListener
             userRecyclerView.setAdapter(usersAdapter);
             userRecyclerView.setVisibility(View.VISIBLE);
             getUsers("list");
+            userRecyclerView.setHasFixedSize(true);
             no_btn.setOnClickListener(view1 -> dialog.dismiss());
             dialog.show();
 
@@ -152,6 +153,7 @@ public class InfoGroupActivity extends AppCompatActivity implements UserListener
             userRecyclerView.setAdapter(deleteGroupSelectionAdapter);
             userRecyclerView.setVisibility(View.VISIBLE);
             getUsers("delete");
+            userRecyclerView.setHasFixedSize(true);
             no_btn.setOnClickListener(view1 -> dialog.dismiss());
 
             btnDelete.setOnClickListener(view12 -> {
@@ -187,6 +189,7 @@ public class InfoGroupActivity extends AppCompatActivity implements UserListener
             userRecyclerView.setAdapter(addGroupSelectionAdapter);
             userRecyclerView.setVisibility(View.VISIBLE);
             getUsers("add");
+            userRecyclerView.setHasFixedSize(true);
 
             btnAdd.setOnClickListener(view13 -> {
                 List<User> selectedUser = addGroupSelectionAdapter.getSelectedUser();
@@ -241,7 +244,7 @@ public class InfoGroupActivity extends AppCompatActivity implements UserListener
             userRecyclerView.setVisibility(View.VISIBLE);
 
             getUsers("change");
-
+            userRecyclerView.setHasFixedSize(true);
 
             no_btn.setOnClickListener(view1 -> changeTeamLeaderDialog.dismiss());
             changeTeamLeaderDialog.show();

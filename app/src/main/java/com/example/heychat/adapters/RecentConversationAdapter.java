@@ -68,17 +68,6 @@ public class RecentConversationAdapter extends RecyclerView.Adapter<RecentConver
         }
 
         void setData(ChatMessage chatMessage) {
-<<<<<<< HEAD
-            if (chatMessage.type != null && chatMessage.type.equals(Constants.MESSAGE_IMAGE)){
-                binding.imageview.setVisibility(View.VISIBLE);
-            } else  if (chatMessage.type != null && chatMessage.type.equals(Constants.MESSAGE_TEXT)){
-                binding.imageview.setVisibility(View.GONE);
-            }
-            binding.imageProfile.setImageBitmap(getConversionImage(chatMessage.conversionImage));
-            binding.textName.setText(chatMessage.conversionName);
-            binding.textRecentMessage.setText(chatMessage.message);
-
-=======
 //            if (chatMessage.type.equals(Constants.MESSAGE_IMAGE)){
 //                binding.imageview.setVisibility(View.VISIBLE);
 //            } else  if (chatMessage.type.equals(Constants.MESSAGE_TEXT)){
@@ -88,11 +77,11 @@ public class RecentConversationAdapter extends RecyclerView.Adapter<RecentConver
             binding.textName.setText(chatMessage.conversionName);
             binding.textRecentMessage.setText(chatMessage.message);
 //            Log.d("OOOO", "++"+chatMessage.type);
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
 
             binding.getRoot().setOnClickListener(view -> {
                 FirebaseFirestore database = FirebaseFirestore.getInstance();
                 database.collection(Constants.KEY_COLLECTION_GROUP).get().addOnSuccessListener(queryDocumentSnapshots -> {
+
 
                     ArrayList<String> groupIds = new ArrayList<>();
                     for (QueryDocumentSnapshot queryDocumentSnapshot : queryDocumentSnapshots) {

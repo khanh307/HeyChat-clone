@@ -2,42 +2,39 @@ package com.example.heychat.adapters;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Dialog;
-import android.app.ProgressDialog;
-import android.content.ContentResolver;
-import android.content.ContentUris;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.provider.DocumentsContract;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
-import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
-import android.webkit.MimeTypeMap;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-<<<<<<< HEAD
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-=======
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.heychat.R;
 import com.example.heychat.activities.OutgoingInvitationActivity;
 import com.example.heychat.listeners.CallListener;
@@ -49,35 +46,28 @@ import com.example.heychat.network.ApiService;
 import com.example.heychat.ultilities.Constants;
 import com.example.heychat.ultilities.PreferenceManager;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
-<<<<<<< HEAD
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
-=======
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
 import com.google.mlkit.nl.translate.TranslateLanguage;
 import com.google.mlkit.nl.translate.Translation;
 import com.google.mlkit.nl.translate.Translator;
 import com.google.mlkit.nl.translate.TranslatorOptions;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -87,6 +77,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+
 import gun0912.tedbottompicker.TedBottomPicker;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -106,6 +97,9 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
     private String conversationId = null;
     private Boolean isReceiverAvailable = false;
     private String encodedImage;
+    private Parcelable recyclerViewState;
+    private TextView textSuggestion1, textSuggestion2, textSuggestion3, textSuggestion4, textSuggestion5;
+    private ConstraintLayout layoutSuggestions;
 
     public static ChatBottomSheetFragment newInstance(User user) {
         ChatBottomSheetFragment chatBottomSheetFragment = new ChatBottomSheetFragment();
@@ -166,16 +160,24 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
         chatRecyclerView.setAdapter(chatAdapter);
         chatRecyclerView.setItemAnimator(null);
         database = FirebaseFirestore.getInstance();
+        recyclerViewState = Objects.requireNonNull(chatRecyclerView.getLayoutManager()).onSaveInstanceState();
+
     }
 
     private void initView(View view) {
         imageBack = view.findViewById(R.id.imageBack);
         TextView textName = view.findViewById(R.id.textName);
+        textSuggestion1 = view.findViewById(R.id.textSuggestion1);
+        textSuggestion2 = view.findViewById(R.id.textSuggestion2);
+        textSuggestion3 = view.findViewById(R.id.textSuggestion3);
+        textSuggestion4 = view.findViewById(R.id.textSuggestion4);
+        textSuggestion5 = view.findViewById(R.id.textSuggestion5);
         chatRecyclerView = view.findViewById(R.id.chatRecyclerView);
         inputeMessage = view.findViewById(R.id.inputeMessage);
         layoutSend = view.findViewById(R.id.layoutSend);
         layoutImage = view.findViewById(R.id.layoutImage);
         layoutAttact = view.findViewById(R.id.layoutAttact);
+        layoutSuggestions = view.findViewById(R.id.layoutSuggestions);
         textName.setText(receiverUser.name);
 
         inputeMessage.addTextChangedListener(new TextWatcher() {
@@ -198,6 +200,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
 
             }
         });
+
     }
 
     private void setBtnVisible(boolean visible) {
@@ -205,6 +208,13 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
             layoutImage.setVisibility(View.INVISIBLE);
             layoutAttact.setVisibility(View.INVISIBLE);
             layoutSend.setVisibility(View.VISIBLE);
+            layoutSuggestions.setVisibility(View.GONE);
+            textSuggestion1.setVisibility(View.GONE);
+            textSuggestion2.setVisibility(View.GONE);
+            textSuggestion3.setVisibility(View.GONE);
+            textSuggestion4.setVisibility(View.GONE);
+            textSuggestion5.setVisibility(View.GONE);
+
         } else {
             layoutImage.setVisibility(View.VISIBLE);
             layoutAttact.setVisibility(View.VISIBLE);
@@ -212,57 +222,56 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
         }
     }
 
-    private void sendMessage() {
-        HashMap<String, Object> message = new HashMap<>();
-        message.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
-        message.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
-        message.put(Constants.KEY_MESSAGE, inputeMessage.getText().toString());
-        message.put(Constants.KEY_TIMESTAMP, new Date());
-        message.put(Constants.KEY_MESSAGE_TYPE, Constants.MESSAGE_TEXT);
-        database.collection(Constants.KEY_COLLECTION_CHAT).add(message);
-<<<<<<< HEAD
-        if (conversationId != null) {
-=======
-        chatAdapter.notifyDataSetChanged();
-        if(conversationId != null){
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
-            updateConversion(inputeMessage.getText().toString(), Constants.MESSAGE_TEXT);
-        } else {
-            HashMap<String, Object> conversion = new HashMap<>();
-            conversion.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
-            conversion.put(Constants.KEY_SENDER_NAME, preferenceManager.getString(Constants.KEY_NAME));
-            conversion.put(Constants.KEY_SENDER_IMAGE, preferenceManager.getString(Constants.KEY_IMAGE));
-            conversion.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
-            conversion.put(Constants.KEY_RECEIVER_NAME, receiverUser.name);
-            conversion.put(Constants.KEY_RECEIVER_IMAGE, receiverUser.image);
-            conversion.put(Constants.KEY_LAST_MESSAGE, inputeMessage.getText().toString());
-            conversion.put(Constants.KEY_MESSAGE_TYPE, Constants.MESSAGE_TEXT);
-            conversion.put(Constants.KEY_TIMESTAMP, new Date());
-            addConversion(conversion);
-        }
-        if (!isReceiverAvailable) {
-            try {
-
-                JSONArray tokens = new JSONArray();
-                tokens.put(receiverUser.token);
-
-                JSONObject data = new JSONObject();
-                data.put(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
-                data.put(Constants.KEY_NAME, preferenceManager.getString(Constants.KEY_NAME));
-                data.put(Constants.KEY_FCM_TOKEN, preferenceManager.getString(Constants.KEY_FCM_TOKEN));
-                data.put(Constants.KEY_MESSAGE, inputeMessage.getText().toString());
-
-                JSONObject body = new JSONObject();
-                body.put(Constants.REMOTE_MSG_DATA, data);
-                body.put(Constants.REMOTE_MSG_REGISTRATION_IDS, tokens);
-
-                sendNotification(body.toString());
-
-            } catch (Exception e) {
-                //showToast(e.getMessage());
+    private void sendMessage(String text) {
+        if (!text.trim().equals("")){
+            HashMap<String, Object> message = new HashMap<>();
+            message.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+            message.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
+            message.put(Constants.KEY_MESSAGE, text);
+            message.put(Constants.KEY_TIMESTAMP, new Date());
+            message.put(Constants.KEY_MESSAGE_TYPE, Constants.MESSAGE_TEXT);
+            message.put(Constants.KEY_SEEN_MESSAGE, false);
+            database.collection(Constants.KEY_COLLECTION_CHAT).add(message);
+            if (conversationId != null) {
+                updateConversion(text, Constants.MESSAGE_TEXT);
+            } else {
+                HashMap<String, Object> conversion = new HashMap<>();
+                conversion.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+                conversion.put(Constants.KEY_SENDER_NAME, preferenceManager.getString(Constants.KEY_NAME));
+                conversion.put(Constants.KEY_SENDER_IMAGE, preferenceManager.getString(Constants.KEY_IMAGE));
+                conversion.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
+                conversion.put(Constants.KEY_RECEIVER_NAME, receiverUser.name);
+                conversion.put(Constants.KEY_RECEIVER_IMAGE, receiverUser.image);
+                conversion.put(Constants.KEY_LAST_MESSAGE, text);
+                conversion.put(Constants.KEY_MESSAGE_TYPE, Constants.MESSAGE_TEXT);
+                conversion.put(Constants.KEY_TIMESTAMP, new Date());
+                addConversion(conversion);
             }
+            if (!isReceiverAvailable) {
+                try {
+
+                    JSONArray tokens = new JSONArray();
+                    tokens.put(receiverUser.token);
+
+                    JSONObject data = new JSONObject();
+                    data.put(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+                    data.put(Constants.KEY_NAME, preferenceManager.getString(Constants.KEY_NAME));
+                    data.put(Constants.KEY_FCM_TOKEN, preferenceManager.getString(Constants.KEY_FCM_TOKEN));
+                    data.put(Constants.KEY_MESSAGE, text);
+
+                    JSONObject body = new JSONObject();
+                    body.put(Constants.REMOTE_MSG_DATA, data);
+                    body.put(Constants.REMOTE_MSG_REGISTRATION_IDS, tokens);
+
+                    sendNotification(body.toString());
+
+                } catch (Exception e) {
+                    //showToast(e.getMessage());
+                }
+            }
+            inputeMessage.setText(null);
         }
-        inputeMessage.setText(null);
+
     }
 
     private void showToast(String message) {
@@ -336,8 +345,54 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
         database.collection(Constants.KEY_COLLECTION_CHAT)
                 .whereEqualTo(Constants.KEY_SENDER_ID, receiverUser.id)
                 .whereEqualTo(Constants.KEY_RECEIVER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
-                .addSnapshotListener(eventListener);
+                .addSnapshotListener(seenListener);
     }
+
+
+    @SuppressLint("NotifyDataSetChanged")
+    private final EventListener<QuerySnapshot> seenListener = (value, error) -> {
+        if (error != null) {
+            return;
+        }
+        if (value != null) {
+            int count = chatMessages.size();
+            for (DocumentChange documentChange : value.getDocumentChanges()) {
+                if (documentChange.getType() == DocumentChange.Type.ADDED) {
+                    HashMap<String, Object> seen = new HashMap<>();
+                    seen.put(Constants.KEY_SEEN_MESSAGE, true);
+                    database.collection(Constants.KEY_COLLECTION_CHAT)
+                            .document(documentChange.getDocument().getId())
+                            .update(seen);
+                    ChatMessage chatMessage = new ChatMessage();
+                    chatMessage.id = documentChange.getDocument().getId();
+                    chatMessage.type = documentChange.getDocument().getString(Constants.KEY_MESSAGE_TYPE);
+                    chatMessage.senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
+                    chatMessage.receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
+                    chatMessage.message = documentChange.getDocument().getString(Constants.KEY_MESSAGE);
+                    chatMessage.dateTime = getReadableDateTime(documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP));
+                    chatMessage.dataObject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
+                    chatMessage.isSeen = documentChange.getDocument().getBoolean(Constants.KEY_SEEN_MESSAGE);
+                    if (Objects.equals(chatMessage.senderId, preferenceManager.getString(Constants.KEY_USER_ID)))
+                        chatMessage.model = "sender";
+                    else chatMessage.model = "receiver";
+                    chatMessages.add(chatMessage);
+                }
+            }
+
+            Collections.sort(chatMessages, (obj1, obj2) -> obj1.dataObject.compareTo(obj2.dataObject));
+            if (count == 0) {
+                chatAdapter.notifyItemRangeInserted(0, chatAdapter.getItemCount());
+                chatRecyclerView.getLayoutManager().onRestoreInstanceState(recyclerViewState);
+            } else {
+                chatAdapter.notifyItemRangeInserted(chatMessages.size(), chatMessages.size());
+                chatRecyclerView.smoothScrollToPosition(chatMessages.size() - 1);
+            }
+
+        }
+        if (conversationId == null) {
+            checkForConversion();
+        }
+    };
 
     @SuppressLint("NotifyDataSetChanged")
     private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
@@ -356,6 +411,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
                     chatMessage.message = documentChange.getDocument().getString(Constants.KEY_MESSAGE);
                     chatMessage.dateTime = getReadableDateTime(documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP));
                     chatMessage.dataObject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
+                    chatMessage.isSeen = documentChange.getDocument().getBoolean(Constants.KEY_SEEN_MESSAGE);
                     if (Objects.equals(chatMessage.senderId, preferenceManager.getString(Constants.KEY_USER_ID)))
                         chatMessage.model = "sender";
                     else chatMessage.model = "receiver";
@@ -365,7 +421,8 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
 
             Collections.sort(chatMessages, (obj1, obj2) -> obj1.dataObject.compareTo(obj2.dataObject));
             if (count == 0) {
-                chatAdapter.notifyDataSetChanged();
+                chatAdapter.notifyItemRangeInserted(0, chatAdapter.getItemCount());
+                chatRecyclerView.getLayoutManager().onRestoreInstanceState(recyclerViewState);
             } else {
                 chatAdapter.notifyItemRangeInserted(chatMessages.size(), chatMessages.size());
                 chatRecyclerView.smoothScrollToPosition(chatMessages.size() - 1);
@@ -376,6 +433,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
             checkForConversion();
         }
     };
+
 
     private Bitmap getBitmapFromEncodedString(String encodedImage) {
         if (encodedImage != null) {
@@ -393,10 +451,35 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
 
     private void setListeners() {
         imageBack.setOnClickListener(view -> this.dismiss());
-        layoutSend.setOnClickListener(v -> sendMessage());
 
-        layoutImage.setOnClickListener(v -> requestImagePermission());
-        layoutAttact.setOnClickListener(v -> requestFilePermission());
+        layoutSend.setOnClickListener(v -> sendMessage(inputeMessage.getText().toString()));
+
+        layoutImage.setOnClickListener(v -> requestPermission());
+
+        textSuggestion1.setOnClickListener(view -> {
+            sendMessage(textSuggestion1.getText().toString());
+            layoutSuggestions.setVisibility(View.GONE);
+        });
+
+        textSuggestion2.setOnClickListener(view -> {
+            sendMessage(textSuggestion2.getText().toString());
+            layoutSuggestions.setVisibility(View.GONE);
+        });
+
+        textSuggestion3.setOnClickListener(view -> {
+            sendMessage(textSuggestion3.getText().toString());
+            layoutSuggestions.setVisibility(View.GONE);
+        });
+
+        textSuggestion4.setOnClickListener(view -> {
+            sendMessage(textSuggestion4.getText().toString());
+            layoutSuggestions.setVisibility(View.GONE);
+        });
+
+        textSuggestion5.setOnClickListener(view -> {
+            sendMessage(textSuggestion5.getText().toString());
+            layoutSuggestions.setVisibility(View.GONE);
+        });
 
         CallListener callListener = new CallListener() {
             @Override
@@ -425,153 +508,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
         };
     }
 
-    private void requestFilePermission() {
-        PermissionListener permissionlistener = new PermissionListener() {
-            @Override
-            public void onPermissionGranted() {
-                openFileChoser();
-            }
-
-            @Override
-            public void onPermissionDenied(List<String> deniedPermissions) {
-                Toast.makeText(getContext(), "Permission Denied\n" + deniedPermissions.toString(), Toast.LENGTH_SHORT).show();
-            }
-        };
-
-        TedPermission.create()
-                .setPermissionListener(permissionlistener)
-                .setDeniedMessage("If you reject permission,you can not use this service\n\nPlease turn on permissions at [Setting] > [Permission]")
-                .setPermissions(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .check();
-
-    }
-
-    private void openFileChoser() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("*/*");
-        intent = Intent.createChooser(intent, "Chose a file");
-        pickFileActivity.launch(intent);
-    }
-
-    ActivityResultLauncher<Intent> pickFileActivity = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-        @Override
-        public void onActivityResult(ActivityResult result) {
-            if (result.getResultCode() == Activity.RESULT_OK) {
-                Intent data = result.getData();
-                Uri uri = data.getData();
-
-//                inputeMessage.setText(uri.toString());
-
-//                File file = new File(uri.toString());
-                String path = new File(uri.toString()).getAbsolutePath();
-
-                if(path != null){
-                    String filename;
-                    Cursor cursor = getContext().getContentResolver().query(uri,null,null,null,null);
-
-                    if(cursor == null) filename=uri.getPath();
-                    else{
-                        cursor.moveToFirst();
-                        int idx = cursor.getColumnIndex(MediaStore.Files.FileColumns.DISPLAY_NAME);
-                        filename = cursor.getString(idx);
-                        cursor.close();
-                    }
-
-                    String name = filename.substring(0,filename.lastIndexOf("."));
-                    String extension = filename.substring(filename.lastIndexOf(".")+1);
-
-
-                    uploadFile(uri, name, extension);
-                }
-
-
-            }
-        }
-    });
-
-
-    private void uploadFile(Uri uri, String fileName, String fileExtension) {
-        final ProgressDialog progressDialog = new ProgressDialog(getContext());
-        progressDialog.setTitle("Uploading...");
-        progressDialog.show();
-
-        StorageReference reference = FirebaseStorage.getInstance().getReference().child(preferenceManager.getString(Constants.KEY_USER_ID))
-                .child(fileName + "--__" + System.currentTimeMillis()+"."+fileExtension);
-        reference.putFile(uri)
-                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
-                        while (!uriTask.isComplete()) ;
-                        progressDialog.dismiss();
-                        taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-                                sendFile(uri.toString());
-                            }
-                        });
-                    }
-                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
-                        double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
-                        progressDialog.setMessage("Uploaded: " + (int) progress + "%");
-                    }
-                });
-
-    }
-
-    private void sendFile(String download) {
-        HashMap<String, Object> message = new HashMap<>();
-        message.put(Constants.KEY_MESSAGE_TYPE, Constants.MESSAGE_FILE);
-        message.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
-        message.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
-        message.put(Constants.KEY_MESSAGE, download);
-        message.put(Constants.KEY_TIMESTAMP, new Date());
-        database.collection(Constants.KEY_COLLECTION_CHAT).add(message);
-        if (conversationId != null) {
-            updateConversion(Constants.MESSAGE_FILE, Constants.MESSAGE_FILE);
-        } else {
-            HashMap<String, Object> conversion = new HashMap<>();
-            conversion.put(Constants.KEY_MESSAGE_TYPE, Constants.MESSAGE_FILE);
-            conversion.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
-            conversion.put(Constants.KEY_SENDER_NAME, preferenceManager.getString(Constants.KEY_NAME));
-            conversion.put(Constants.KEY_SENDER_IMAGE, preferenceManager.getString(Constants.KEY_IMAGE));
-            conversion.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
-            conversion.put(Constants.KEY_RECEIVER_NAME, receiverUser.name);
-            conversion.put(Constants.KEY_RECEIVER_IMAGE, receiverUser.image);
-            conversion.put(Constants.KEY_LAST_MESSAGE, Constants.MESSAGE_FILE);
-            conversion.put(Constants.KEY_TIMESTAMP, new Date());
-            addConversion(conversion);
-        }
-        if (!isReceiverAvailable) {
-            try {
-
-                JSONArray tokens = new JSONArray();
-                tokens.put(receiverUser.token);
-
-                JSONObject data = new JSONObject();
-
-                data.put(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
-                data.put(Constants.KEY_NAME, preferenceManager.getString(Constants.KEY_NAME));
-                data.put(Constants.KEY_FCM_TOKEN, preferenceManager.getString(Constants.KEY_FCM_TOKEN));
-                data.put(Constants.KEY_MESSAGE, Constants.MESSAGE_FILE);
-
-                JSONObject body = new JSONObject();
-                body.put(Constants.REMOTE_MSG_DATA, data);
-                body.put(Constants.REMOTE_MSG_REGISTRATION_IDS, tokens);
-
-                sendNotification(body.toString());
-
-            } catch (Exception e) {
-                //showToast(e.getMessage());
-            }
-        }
-        inputeMessage.setText(null);
-    }
-
-
-    private void requestImagePermission() {
+    private void requestPermission() {
         PermissionListener permissionlistener = new PermissionListener() {
             @Override
             public void onPermissionGranted() {
@@ -694,13 +631,8 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
         }
     }
 
-<<<<<<< HEAD
     private String getReadableDateTime(Date date) {
-        return new SimpleDateFormat("dd MMMM, yyyy - hh:mm a", Locale.getDefault()).format(date);
-=======
-    private String getReadableDateTime(Date date){
         return new SimpleDateFormat("dd MMMM, yyyy\nhh:mm a", Locale.getDefault()).format(date);
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
     }
 
     private void checkForConversionRemotely(String senderId, String receiverId) {
@@ -719,75 +651,86 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
     };
 
     @Override
-    public void onMessageSelection(Boolean isSelected) {
+    public void onMessageSelection(Boolean isSelected, int position, List<ChatMessage> lastMessages, ChatMessage chatMessage) {
+        final Dialog dialog = openDialog(R.layout.layout_dialog_message_selection);
+        assert dialog != null;
+        TextView textMessage = dialog.findViewById(R.id.textMessage);
+        TextView textDateTime = dialog.findViewById(R.id.textDateTime);
+        TextView textSeenMessage = dialog.findViewById(R.id.textSeenMessage);
+        RelativeLayout layoutTranslate = dialog.findViewById(R.id.relativeLayoutTranslate);
+        RelativeLayout layoutCopy = dialog.findViewById(R.id.relativeLayoutCopy);
+        RelativeLayout layoutMultipleSelection = dialog.findViewById(R.id.relativeLayoutMultipleSelection);
+        RelativeLayout layoutDelete = dialog.findViewById(R.id.relativeLayoutDelete);
+        ImageView imageCheck = dialog.findViewById(R.id.imageCheck);
 
-    }
-
-<<<<<<< HEAD
-    @Override
-    public void onGetMessage(ChatMessage chatMessage) {
-
-        TranslatorOptions options;
-        if (preferenceManager.getString(Constants.KEY_LANGUAGE) == "VI") {
-=======
-    @SuppressLint("NotifyDataSetChanged")
-    @Override
-    public void onTranslateMessage(ChatMessage chatMessage, int pos) {
-
-        TranslatorOptions options;
-        if (Objects.equals(preferenceManager.getString(Constants.KEY_LANGUAGE), "VI")){
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
-            options = new TranslatorOptions.Builder()
-                    .setSourceLanguage(TranslateLanguage.ENGLISH)
-                    .setTargetLanguage(TranslateLanguage.VIETNAMESE)
-                    .build();
+        textMessage.setText(lastMessages.get(position).message);
+        textDateTime.setText(lastMessages.get(position).dateTime);
+        if (lastMessages.get(position).isSeen){
+            textSeenMessage.setText("Seen");
+            imageCheck.setVisibility(View.VISIBLE);
         } else {
-            options = new TranslatorOptions.Builder()
-                    .setSourceLanguage(TranslateLanguage.VIETNAMESE)
-                    .setTargetLanguage(TranslateLanguage.ENGLISH)
-                    .build();
+            textSeenMessage.setText("Delivered");
+            imageCheck.setVisibility(View.GONE);
         }
 
-        Translator englishVITranslator = Translation.getClient(options);
-
-        getLifecycle().addObserver(englishVITranslator);
-
-<<<<<<< HEAD
-        englishVITranslator.downloadModelIfNeeded().addOnSuccessListener(unused -> {
-            englishVITranslator.translate(chatMessage.message)
-                    .addOnSuccessListener(new OnSuccessListener<String>() {
-                        @Override
-                        public void onSuccess(String s) {
-                            chatMessage.message = s;
-                            chatAdapter.notifyDataSetChanged();
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            showToast(e.getMessage());
-                        }
-                    });
-
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                showToast(e.getMessage());
+        layoutTranslate.setOnClickListener(view -> {
+            TranslatorOptions options;
+            imageCheck.setVisibility(View.GONE);
+            if (Objects.equals(preferenceManager.getString(Constants.KEY_LANGUAGE), "VI")) {
+                options = new TranslatorOptions.Builder()
+                        .setSourceLanguage(TranslateLanguage.ENGLISH)
+                        .setTargetLanguage(TranslateLanguage.VIETNAMESE)
+                        .build();
+            } else {
+                options = new TranslatorOptions.Builder()
+                        .setSourceLanguage(TranslateLanguage.VIETNAMESE)
+                        .setTargetLanguage(TranslateLanguage.ENGLISH)
+                        .build();
             }
-        });
-=======
+
+            Translator englishVITranslator = Translation.getClient(options);
+
+            getLifecycle().addObserver(englishVITranslator);
 
 
-            englishVITranslator.downloadModelIfNeeded().addOnSuccessListener(unused -> englishVITranslator.translate(chatMessage.message)
-                    .addOnSuccessListener(s -> {
-                        chatMessage.message = s;
-                        chatAdapter.notifyItemChanged(pos);
-                    })
+            englishVITranslator.downloadModelIfNeeded().addOnSuccessListener(unused -> englishVITranslator.translate(textMessage.getText().toString())
+                    .addOnSuccessListener(textMessage::setText)
                     .addOnFailureListener(e -> showToast(e.getMessage()))).addOnFailureListener(e -> showToast(e.getMessage()));
 
+            showToast("Translated the message!");
+        });
+
+        layoutCopy.setOnClickListener(view -> {
+            ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("message", textMessage.getText().toString());
+            clipboard.setPrimaryClip(clip);
+            showToast("Copied the message!");
+            dialog.dismiss();
+        });
+
+        layoutMultipleSelection.setOnClickListener(view -> {
+
+        });
+
+        layoutDelete.setOnClickListener(view -> {
+            chatMessages.remove(position);
+            chatAdapter.notifyItemRemoved(position);
+            updateDataOnFB(chatMessage.id);
+            if (lastMessages.size() >= 1){
+                updateConversionAfterDeleteMessage(lastMessages.get(lastMessages.size()-1).message,
+                        lastMessages.get(lastMessages.size()-1).type,
+                        lastMessages.get(lastMessages.size()-1).dataObject);
+            } else {
+                lastMessages.size();
+                database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(conversationId).delete();
+            }
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
 
-    private void updateDataOnFB(String key){
+    private void updateDataOnFB(String key) {
         database.collection(Constants.KEY_COLLECTION_CHAT)
                 .document(key)
                 .delete()
@@ -795,7 +738,7 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
                 .addOnFailureListener(e -> showToast(e.getMessage()));
     }
 
-    private void updateConversionAfterDeleteMessage(String message, String type, Date time){
+    private void updateConversionAfterDeleteMessage(String message, String type, Date time) {
         DocumentReference documentReference =
                 database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(conversationId);
         documentReference.update(
@@ -805,21 +748,23 @@ public class ChatBottomSheetFragment extends BottomSheetDialogFragment implement
         );
     }
 
-    @Override
-    public void onDeleteMessage(ChatMessage chatMessage, int pos, List<ChatMessage> lastMessages) {
-        chatMessages.remove(pos);
-        chatAdapter.notifyItemRemoved(pos);
-        updateDataOnFB(chatMessage.id);
-        if (lastMessages.size() >= 1){
-            updateConversionAfterDeleteMessage(lastMessages.get(lastMessages.size()-1).message,
-                    lastMessages.get(lastMessages.size()-1).type,
-                    lastMessages.get(lastMessages.size()-1).dataObject);
-        } else if (lastMessages.size() == 0){
-            database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(conversationId).delete();
+    private Dialog openDialog(int layout) {
+        final Dialog dialog = new Dialog(getContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(layout);
+        dialog.setCancelable(true);
+        Window window = dialog.getWindow();
+        if (window == null) {
+            return null;
         }
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
+        WindowManager.LayoutParams windowAttributes = window.getAttributes();
+        windowAttributes.gravity = Gravity.BOTTOM;
+        window.setAttributes(windowAttributes);
+
+        return dialog;
     }
-
 
 }

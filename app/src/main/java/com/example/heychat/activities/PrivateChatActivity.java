@@ -227,43 +227,10 @@ public class PrivateChatActivity extends BaseActivity implements MessageListener
 
 
     @Override
-    public void onMessageSelection(Boolean isSelected) {
+    public void onMessageSelection(Boolean isSelected, int position, List<ChatMessage> chatMessages, ChatMessage chatMessage) {
 
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    @Override
-    public void onTranslateMessage(ChatMessage chatMessage, int pos) {
-        TranslatorOptions options;
-        if (Objects.equals(preferenceManager.getString(Constants.KEY_LANGUAGE), "VI")){
-            options = new TranslatorOptions.Builder()
-                    .setSourceLanguage(TranslateLanguage.ENGLISH)
-                    .setTargetLanguage(TranslateLanguage.VIETNAMESE)
-                    .build();
-        } else {
-            options = new TranslatorOptions.Builder()
-                    .setSourceLanguage(TranslateLanguage.VIETNAMESE)
-                    .setTargetLanguage(TranslateLanguage.ENGLISH)
-                    .build();
-        }
-
-        Translator englishVITranslator = Translation.getClient(options);
-
-        getLifecycle().addObserver(englishVITranslator);
-
-
-
-        englishVITranslator.downloadModelIfNeeded().addOnSuccessListener(unused -> englishVITranslator.translate(chatMessage.message)
-                .addOnSuccessListener(s -> {
-                    chatMessage.message = s;
-                    chatAdapter.notifyItemChanged(pos);
-                })
-                .addOnFailureListener(e -> showToast(e.getMessage()))).addOnFailureListener(e -> showToast(e.getMessage()));
-    }
-
-    @Override
-    public void onDeleteMessage(ChatMessage chatMessage, int pos, List<ChatMessage> chatMessages) {
-    }
 
     @Override
     public void finishActivity(int requestCode) {

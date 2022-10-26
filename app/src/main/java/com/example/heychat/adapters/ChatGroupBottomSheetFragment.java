@@ -2,13 +2,15 @@ package com.example.heychat.adapters;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Dialog;
-import android.app.ProgressDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -16,27 +18,24 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.heychat.R;
-<<<<<<< HEAD
-=======
 import com.example.heychat.activities.InfoGroupActivity;
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
 import com.example.heychat.listeners.CallListener;
 import com.example.heychat.listeners.MessageListener;
 import com.example.heychat.models.ChatMessage;
@@ -48,10 +47,6 @@ import com.example.heychat.ultilities.PreferenceManager;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-<<<<<<< HEAD
-import com.google.android.gms.tasks.Task;
-=======
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.firebase.firestore.DocumentChange;
@@ -60,13 +55,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
-<<<<<<< HEAD
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
-=======
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
 import com.google.mlkit.nl.translate.TranslateLanguage;
 import com.google.mlkit.nl.translate.Translation;
 import com.google.mlkit.nl.translate.Translator;
@@ -79,7 +67,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -97,7 +84,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment implements MessageListener {
-
 
     private AppCompatImageView imageBack;
     private static TextView textName;
@@ -127,7 +113,7 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
         super.onCreate(savedInstanceState);
 
         Bundle bundleReceive = getArguments();
-        if (bundleReceive != null) {
+        if(bundleReceive != null){
             receiverUser = (Group) bundleReceive.get(Constants.KEY_GROUP);
 //            textName.setText(receiverUser.name);
         }
@@ -140,7 +126,7 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         BottomSheetDialog bottomSheetDialog = (BottomSheetDialog) new BottomSheetDialog(getContext(), R.style.ChatBottomSheet);
         Window window = bottomSheetDialog.getWindow();
-        if (window == null) {
+        if(window == null){
             return null;
         }
 //        window.setBackgroundDrawableResource(R.color.primary);
@@ -175,7 +161,7 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
 
     }
 
-    private void initView(View view) {
+    private void initView(View view){
         imageBack = view.findViewById(R.id.imageBack);
         textName = view.findViewById(R.id.textName);
         chatRecyclerView = view.findViewById(R.id.chatRecyclerView);
@@ -202,7 +188,7 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (inputeMessage.getText().toString().isEmpty()) {
+                if(inputeMessage.getText().toString().isEmpty()){
                     setBtnVisible(false);
                 } else {
                     setBtnVisible(true);
@@ -311,158 +297,37 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
         imageBack.setOnClickListener(view -> {
             dismiss();
         });
-        layoutSend.setOnClickListener(v -> sendMessage());
-        layoutImage.setOnClickListener(v -> requestPermission());
-        layoutAttact.setOnClickListener(v -> requestFilePermission());
+        layoutSend.setOnClickListener(v -> sendMessage(inputeMessage.getText().toString()));
+        layoutImage.setOnClickListener(v->requestPermission());
 
+//        CallListener callListener = new CallListener() {
+//            @Override
+//            public void initiateVideoCall(User user) {
+//                if (user.token == null || user.token.trim().isEmpty()) {
+//                    Toast.makeText(getApplicationContext(), user.name + "is not available for video call", Toast.LENGTH_SHORT).show();
+//                } else {
+//                    Intent intent = new Intent(getApplicationContext(), OutgoingInvitationActivity.class);
+//                    intent.putExtra("user", user);
+//                    intent.putExtra("type", "video");
+//                    startActivity(intent);
+//                }
+//            }
+//
+//            @Override
+//            public void initiateAudioCall(User user) {
+//                if (user.token == null || user.token.trim().isEmpty()) {
+//                    Toast.makeText(getApplicationContext(), user.name + "is not available for audio call", Toast.LENGTH_SHORT).show();
+//                } else {
+//                    Intent intent = new Intent(getApplicationContext(), OutgoingInvitationActivity.class);
+//                    intent.putExtra("user", user);
+//                    intent.putExtra("type", "audio");
+//                    startActivity(intent);
+//                }
+//            }
+//        };
     }
 
-    private void requestFilePermission() {
-        PermissionListener permissionlistener = new PermissionListener() {
-            @Override
-            public void onPermissionGranted() {
-                openFileChoser();
-            }
-
-            @Override
-            public void onPermissionDenied(List<String> deniedPermissions) {
-                Toast.makeText(getContext(), "Permission Denied\n" + deniedPermissions.toString(), Toast.LENGTH_SHORT).show();
-            }
-        };
-
-        TedPermission.create()
-                .setPermissionListener(permissionlistener)
-                .setDeniedMessage("If you reject permission,you can not use this service\n\nPlease turn on permissions at [Setting] > [Permission]")
-                .setPermissions(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .check();
-
-    }
-
-    private void openFileChoser() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("*/*");
-        intent = Intent.createChooser(intent, "Chose a file");
-        pickFileActivity.launch(intent);
-    }
-
-    ActivityResultLauncher<Intent> pickFileActivity = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-        @Override
-        public void onActivityResult(ActivityResult result) {
-            if (result.getResultCode() == Activity.RESULT_OK) {
-                Intent data = result.getData();
-                Uri uri = data.getData();
-
-//                inputeMessage.setText(uri.toString());
-
-//                File file = new File(uri.toString());
-                String path = new File(uri.toString()).getAbsolutePath();
-
-                if (path != null) {
-                    String filename;
-                    Cursor cursor = getContext().getContentResolver().query(uri, null, null, null, null);
-
-                    if (cursor == null) filename = uri.getPath();
-                    else {
-                        cursor.moveToFirst();
-                        int idx = cursor.getColumnIndex(MediaStore.Files.FileColumns.DISPLAY_NAME);
-                        filename = cursor.getString(idx);
-                        cursor.close();
-                    }
-
-                    String name = filename.substring(0, filename.lastIndexOf("."));
-                    String extension = filename.substring(filename.lastIndexOf(".") + 1);
-
-
-                    uploadFile(uri, name, extension);
-                }
-
-
-            }
-        }
-    });
-
-
-    private void uploadFile(Uri uri, String fileName, String fileExtension) {
-        final ProgressDialog progressDialog = new ProgressDialog(getContext());
-        progressDialog.setTitle("Uploading...");
-        progressDialog.show();
-
-        StorageReference reference = FirebaseStorage.getInstance().getReference().child(preferenceManager.getString(Constants.KEY_USER_ID))
-                .child(fileName + "--__" + System.currentTimeMillis() + "." + fileExtension);
-        reference.putFile(uri)
-                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
-                        while (!uriTask.isComplete()) ;
-                        progressDialog.dismiss();
-                        taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-                                sendFile(uri.toString());
-                            }
-                        });
-                    }
-                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
-                        double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
-                        progressDialog.setMessage("Uploaded: " + (int) progress + "%");
-                    }
-                });
-
-    }
-
-    private void sendFile(String download) {
-        HashMap<String, Object> message = new HashMap<>();
-        message.put(Constants.KEY_MESSAGE_TYPE, Constants.MESSAGE_FILE);
-        message.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
-        message.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
-        message.put(Constants.KEY_MESSAGE, download);
-        message.put(Constants.KEY_TIMESTAMP, new Date());
-        database.collection(Constants.KEY_COLLECTION_CHAT_GROUPS).add(message);
-        if (conversationId != null) {
-            updateConversion(Constants.MESSAGE_FILE, Constants.MESSAGE_FILE);
-        } else {
-            HashMap<String, Object> conversion = new HashMap<>();
-            conversion.put(Constants.KEY_MESSAGE_TYPE, Constants.MESSAGE_FILE);
-            conversion.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
-            conversion.put(Constants.KEY_SENDER_NAME, preferenceManager.getString(Constants.KEY_NAME));
-            conversion.put(Constants.KEY_SENDER_IMAGE, preferenceManager.getString(Constants.KEY_IMAGE));
-            conversion.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
-            conversion.put(Constants.KEY_RECEIVER_NAME, receiverUser.name);
-            conversion.put(Constants.KEY_RECEIVER_IMAGE, receiverUser.image);
-            conversion.put(Constants.KEY_LAST_MESSAGE, Constants.MESSAGE_FILE);
-            conversion.put(Constants.KEY_TIMESTAMP, new Date());
-            addConversion(conversion);
-        }
-        if (!isReceiverAvailable) {
-            try {
-
-                JSONArray tokens = new JSONArray();
-                tokens.put(receiverUser.token);
-
-                JSONObject data = new JSONObject();
-
-                data.put(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
-                data.put(Constants.KEY_NAME, preferenceManager.getString(Constants.KEY_NAME));
-                data.put(Constants.KEY_FCM_TOKEN, preferenceManager.getString(Constants.KEY_FCM_TOKEN));
-                data.put(Constants.KEY_MESSAGE, Constants.MESSAGE_FILE);
-
-                JSONObject body = new JSONObject();
-                body.put(Constants.REMOTE_MSG_DATA, data);
-                body.put(Constants.REMOTE_MSG_REGISTRATION_IDS, tokens);
-
-                sendNotification(body.toString());
-
-            } catch (Exception e) {
-                //showToast(e.getMessage());
-            }
-        }
-        inputeMessage.setText(null);
-    }
-
-    private void requestPermission() {
+    private void requestPermission(){
         PermissionListener permissionlistener = new PermissionListener() {
             @Override
             public void onPermissionGranted() {
@@ -508,7 +373,7 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
         message.put(Constants.KEY_MESSAGE, encodedImage);
         message.put(Constants.KEY_TIMESTAMP, new Date());
         database.collection(Constants.KEY_COLLECTION_CHAT_GROUPS).add(message);
-        if (conversationId != null) {
+        if(conversationId != null){
             updateConversion(Constants.MESSAGE_IMAGE, Constants.MESSAGE_IMAGE);
         } else {
             HashMap<String, Object> conversion = new HashMap<>();
@@ -523,7 +388,7 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
             conversion.put(Constants.KEY_TIMESTAMP, new Date());
             addConversion(conversion);
         }
-        if (!isReceiverAvailable) {
+        if (!isReceiverAvailable){
             try {
 
                 JSONArray tokens = new JSONArray();
@@ -542,15 +407,15 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
 
                 sendNotification(body.toString());
 
-            } catch (Exception e) {
+            }catch (Exception e){
                 //showToast(e.getMessage());
             }
         }
         inputeMessage.setText(null);
     }
 
-    private String encodeImage(Bitmap bitmap) {
-        int previewWidth = bitmap.getWidth() / 2;
+    private String encodeImage(Bitmap bitmap){
+        int previewWidth = bitmap.getWidth()/2;
         int previewHeight = bitmap.getHeight() * previewWidth / bitmap.getWidth();
         Bitmap previewBitmap = Bitmap.createScaledBitmap(bitmap, previewWidth, previewHeight, false);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -559,17 +424,18 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
         return Base64.encodeToString(bytes, Base64.DEFAULT);
     }
 
-    private void sendMessage() {
+    private void sendMessage(String text) {
         HashMap<String, Object> message = new HashMap<>();
         message.put(Constants.KEY_MESSAGE_TYPE, Constants.MESSAGE_TEXT);
         message.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
         message.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
-        message.put(Constants.KEY_MESSAGE, inputeMessage.getText().toString());
+        message.put(Constants.KEY_MESSAGE, text);
         message.put(Constants.KEY_TIMESTAMP, new Date());
+        message.put(Constants.KEY_SEEN_MESSAGE, false);
         database.collection(Constants.KEY_COLLECTION_CHAT_GROUPS).add(message);
 
         if (conversationId != null) {
-            updateConversion(inputeMessage.getText().toString(), Constants.MESSAGE_TEXT);
+            updateConversion(text, Constants.MESSAGE_TEXT);
         } else {
             HashMap<String, Object> conversion = new HashMap<>();
             conversion.put(Constants.KEY_MESSAGE_TYPE, Constants.MESSAGE_TEXT);
@@ -579,7 +445,7 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
             conversion.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
             conversion.put(Constants.KEY_RECEIVER_NAME, receiverUser.name);
             conversion.put(Constants.KEY_RECEIVER_IMAGE, receiverUser.image);
-            conversion.put(Constants.KEY_LAST_MESSAGE, inputeMessage.getText().toString());
+            conversion.put(Constants.KEY_LAST_MESSAGE, text);
             conversion.put(Constants.KEY_TIMESTAMP, new Date());
             addConversion(conversion);
         }
@@ -593,7 +459,7 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
                 data.put(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
                 data.put(Constants.KEY_NAME, preferenceManager.getString(Constants.KEY_NAME));
                 data.put(Constants.KEY_FCM_TOKEN, preferenceManager.getString(Constants.KEY_FCM_TOKEN));
-                data.put(Constants.KEY_MESSAGE, inputeMessage.getText().toString());
+                data.put(Constants.KEY_MESSAGE, text);
 
                 JSONObject body = new JSONObject();
                 body.put(Constants.REMOTE_MSG_DATA, data);
@@ -667,8 +533,8 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
         }
     }
 
-    private void setBtnVisible(boolean visible) {
-        if (visible) {
+    private void setBtnVisible(boolean visible){
+        if (visible){
             layoutImage.setVisibility(View.INVISIBLE);
             layoutAttact.setVisibility(View.INVISIBLE);
             layoutSend.setVisibility(View.VISIBLE);
@@ -715,79 +581,86 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
     }
 
     @Override
-    public void onMessageSelection(Boolean isSelected) {
+    public void onMessageSelection(Boolean isSelected, int position, List<ChatMessage> lastMessages, ChatMessage chatMessage) {
 
-    }
+        final Dialog dialog = openDialog(R.layout.layout_dialog_message_selection);
+        assert dialog != null;
+        TextView textMessage = dialog.findViewById(R.id.textMessage);
+        TextView textDateTime = dialog.findViewById(R.id.textDateTime);
+        TextView textSeenMessage = dialog.findViewById(R.id.textSeenMessage);
+        RelativeLayout layoutTranslate = dialog.findViewById(R.id.relativeLayoutTranslate);
+        RelativeLayout layoutCopy = dialog.findViewById(R.id.relativeLayoutCopy);
+        RelativeLayout layoutMultipleSelection = dialog.findViewById(R.id.relativeLayoutMultipleSelection);
+        RelativeLayout layoutDelete = dialog.findViewById(R.id.relativeLayoutDelete);
+        ImageView imageCheck = dialog.findViewById(R.id.imageCheck);
 
-    @Override
-<<<<<<< HEAD
-    public void onGetMessage(ChatMessage chatMessage) {
-        TranslatorOptions options;
-        if (preferenceManager.getString(Constants.KEY_LANGUAGE) == "VI") {
-=======
-    public void onTranslateMessage(ChatMessage chatMessage, int pos) {
-        TranslatorOptions options;
-        if (preferenceManager.getString(Constants.KEY_LANGUAGE) == "VI"){
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
-            options = new TranslatorOptions.Builder()
-                    .setSourceLanguage(TranslateLanguage.ENGLISH)
-                    .setTargetLanguage(TranslateLanguage.VIETNAMESE)
-                    .build();
+        textMessage.setText(lastMessages.get(position).message);
+        textDateTime.setText(lastMessages.get(position).dateTime);
+        if (lastMessages.get(position).isSeen){
+            textSeenMessage.setText("Seen");
+            imageCheck.setVisibility(View.VISIBLE);
         } else {
-<<<<<<< HEAD
-
-=======
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
-            options = new TranslatorOptions.Builder()
-                    .setSourceLanguage(TranslateLanguage.VIETNAMESE)
-                    .setTargetLanguage(TranslateLanguage.ENGLISH)
-                    .build();
+            textSeenMessage.setText("Delivered");
+            imageCheck.setVisibility(View.GONE);
         }
 
-        Translator englishVITranslator = Translation.getClient(options);
-
-        getLifecycle().addObserver(englishVITranslator);
-
-
-<<<<<<< HEAD
-=======
-
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
-        englishVITranslator.downloadModelIfNeeded().addOnSuccessListener(unused -> {
-
-
-            englishVITranslator.translate(chatMessage.message)
-                    .addOnSuccessListener(new OnSuccessListener<String>() {
-                        @Override
-                        public void onSuccess(String s) {
-<<<<<<< HEAD
-                            chatMessage.message = s;
-                            chatAdapter.notifyDataSetChanged();
-=======
-                            if (s != chatMessage.message){
-                                chatMessage.message = s;
-                                chatAdapter.notifyItemChanged(pos);
-                            } else showToast("Can't translate it!");
-
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            showToast(e.getMessage());
-                        }
-                    });
-
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                showToast(e.getMessage());
+        layoutTranslate.setOnClickListener(view -> {
+            TranslatorOptions options;
+            if (Objects.equals(preferenceManager.getString(Constants.KEY_LANGUAGE), "VI")) {
+                options = new TranslatorOptions.Builder()
+                        .setSourceLanguage(TranslateLanguage.ENGLISH)
+                        .setTargetLanguage(TranslateLanguage.VIETNAMESE)
+                        .build();
+            } else {
+                options = new TranslatorOptions.Builder()
+                        .setSourceLanguage(TranslateLanguage.VIETNAMESE)
+                        .setTargetLanguage(TranslateLanguage.ENGLISH)
+                        .build();
             }
-        });
-<<<<<<< HEAD
-=======
 
+            Translator englishVITranslator = Translation.getClient(options);
+
+            getLifecycle().addObserver(englishVITranslator);
+
+
+            englishVITranslator.downloadModelIfNeeded().addOnSuccessListener(unused -> englishVITranslator.translate(textMessage.getText().toString())
+                    .addOnSuccessListener(textMessage::setText)
+                    .addOnFailureListener(e -> showToast(e.getMessage()))).addOnFailureListener(e -> showToast(e.getMessage()));
+
+            showToast("Translated the message");
+        });
+
+        layoutCopy.setOnClickListener(view -> {
+            ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("message", textMessage.getText().toString());
+            clipboard.setPrimaryClip(clip);
+            showToast("Copied the message!");
+            dialog.dismiss();
+        });
+
+        layoutMultipleSelection.setOnClickListener(view -> {
+
+        });
+
+        layoutDelete.setOnClickListener(view -> {
+            chatMessages.remove(position);
+            chatAdapter.notifyItemRemoved(position);
+            chatAdapter.notifyItemChanged(position);
+            chatAdapter.notifyDataSetChanged();
+            chatAdapter.notifyItemRangeInserted(0, chatMessages.size());
+            updateDataOnFB(chatMessage.id);
+            if (lastMessages.size() >= 1){
+                updateConversionAfterDeleteMessage(lastMessages.get(lastMessages.size()-1).message,
+                        lastMessages.get(lastMessages.size()-1).type,
+                        lastMessages.get(lastMessages.size()-1).dataObject);
+            } else {
+                lastMessages.size();
+                database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(conversationId).delete();
+            }
+            dialog.dismiss();
+        });
+
+        dialog.show();
 
     }
 
@@ -819,18 +692,23 @@ public class ChatGroupBottomSheetFragment extends BottomSheetDialogFragment impl
         );
     }
 
-    @Override
-    public void onDeleteMessage(ChatMessage chatMessage, int pos, List<ChatMessage> lastMessages) {
-        chatMessages.remove(pos);
-        chatAdapter.notifyItemRemoved(pos);
-        updateDataOnFB(chatMessage.id);
-        if (lastMessages.size() >= 1){
-            updateConversionAfterDeleteMessage(lastMessages.get(lastMessages.size()-1).message,
-                    lastMessages.get(lastMessages.size()-1).type,
-                    lastMessages.get(lastMessages.size()-1).dataObject);
-        } else if (lastMessages.size() == 0){
-            database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(conversationId).delete();
+    private Dialog openDialog(int layout) {
+        final Dialog dialog = new Dialog(getContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(layout);
+        dialog.setCancelable(true);
+        Window window = dialog.getWindow();
+        if (window == null) {
+            return null;
         }
->>>>>>> 8e766fd421345a25f6ea4e1f1d73b281b5c00909
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        WindowManager.LayoutParams windowAttributes = window.getAttributes();
+        windowAttributes.gravity = Gravity.BOTTOM;
+        window.setAttributes(windowAttributes);
+
+        return dialog;
     }
+
 }
